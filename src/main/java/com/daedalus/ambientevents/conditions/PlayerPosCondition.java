@@ -1,6 +1,7 @@
 package com.daedalus.ambientevents.conditions;
 
-import org.json.JSONObject;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
 import com.daedalus.ambientevents.comparisons.NumericComparison;
 import com.daedalus.ambientevents.wrappers.INumber;
@@ -9,38 +10,28 @@ import com.daedalus.ambientevents.wrappers.Wrapper;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import java.util.Random;
+
 public class PlayerPosCondition implements ICondition {
 
 	protected IString dimension;
 	protected NumericComparison comparison;
 	protected INumber compareValue;
 
-	public PlayerPosCondition(JSONObject args) throws Exception {
-
-		if (args.has("dimension")) {
-			this.dimension = Wrapper.newString(args.get("dimension"));
-		} else {
-			throw new Exception("No dimension specified");
-		}
-
-		if (args.has("comparison")) {
-			this.comparison = new NumericComparison(Wrapper.newString(args.get("comparison")));
-		} else {
-			throw new Exception("No comparison specified");
-		}
-
-		if (args.has("value")) {
-			this.compareValue = Wrapper.newNumber(args.get("value"));
-		} else {
-			throw new Exception("No value specified");
-		}
+	public PlayerPosCondition(JsonObject args) throws JsonIOException {
+		if(args.has("dimension")) this.dimension = Wrapper.newString(args.get("dimension"));
+		else throw new JsonIOException("No dimension specified");
+		if(args.has("comparison")) this.comparison = new NumericComparison(Wrapper.newString(args.get("comparison")));
+		else throw new JsonIOException("No comparison specified");
+		if(args.has("value")) this.compareValue = Wrapper.newNumber(args.get("value"));
+		else throw new JsonIOException("No value specified");
 	}
 
 	@Override
 	public boolean isMet(EntityPlayer player) {
 		double playerValue;
-
-		switch (this.dimension.getValue()) {
+		Random rand = player.world.rand;
+		switch(this.dimension.getValue(rand)) {
 		case "x":
 			playerValue = player.posX;
 			break;
@@ -50,11 +41,8 @@ public class PlayerPosCondition implements ICondition {
 		case "z":
 			playerValue = player.posZ;
 			break;
-
-		default:
-			return false;
+		default: return false;
 		}
-
-		return this.comparison.compare(playerValue, this.compareValue.getValue());
+		return this.comparison.compare(rand,playerValue,this.compareValue.getValue(rand));
 	}
 }

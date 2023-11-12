@@ -9,5 +9,4 @@ public class CanSeeSkyCondition implements ICondition {
 	public boolean isMet(EntityPlayer player) {
 		return player.world.canSeeSky(new BlockPos(player.posX, player.posY, player.posZ));
 	}
-
 }

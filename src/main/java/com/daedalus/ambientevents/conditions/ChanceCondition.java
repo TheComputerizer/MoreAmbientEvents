@@ -1,31 +1,26 @@
 package com.daedalus.ambientevents.conditions;
 
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
 import com.daedalus.ambientevents.wrappers.INumber;
 import com.daedalus.ambientevents.wrappers.Wrapper;
 
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.Random;
 
 public class ChanceCondition implements ICondition {
 
 	protected INumber chance;
 
-	public ChanceCondition(JSONObject args) throws Exception {
-		if (args.has("chance")) {
-			this.chance = Wrapper.newNumber(args.get("chance"));
-		} else {
-			throw new Exception("No chance specified");
-		}
+	public ChanceCondition(JsonObject args) throws JsonIOException {
+		if(args.has("chance")) this.chance = Wrapper.newNumber(args.get("chance"));
+		else throw new JsonIOException("No chance specified");
 	}
 
 	@Override
 	public boolean isMet(EntityPlayer player) {
-		if (ClientEventHandler.random.nextDouble() * this.chance.getValue() < 1) {
-			return true;
-		}
-		return false;
-	}
-
+		Random rand = player.world.rand;
+        return rand.nextDouble()*this.chance.getValue(rand)<1;
+    }
 }

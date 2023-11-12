@@ -4,5 +4,5 @@ import net.minecraft.entity.player.EntityPlayer;
 
 public interface ICondition {
 
-	public boolean isMet(EntityPlayer player);
+	boolean isMet(EntityPlayer player);
 }

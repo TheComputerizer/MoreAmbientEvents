@@ -1,16 +1,16 @@
 package com.daedalus.ambientevents.wrappers;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class JSONKeyValuePair {
 
 	protected String key;
-	protected JSONObject objectValue;
+	protected JsonObject objectValue;
 	protected int intValue;
 	protected double doubleValue;
 	protected String stringValue;
-	protected JSONArray arrayValue;
+	protected JsonArray arrayValue;
 	
 	protected boolean containsJSONObject;
 	protected boolean containsInteger;
@@ -19,14 +19,14 @@ public class JSONKeyValuePair {
 	protected boolean containsArray;
 	
 	
-	public JSONKeyValuePair(String keyIn, JSONObject valueIn) {
+	public JSONKeyValuePair(String keyIn, JsonObject valueIn) {
 		this.key = keyIn;
 		this.clearValues();
 		this.objectValue = valueIn;
 		this.containsJSONObject = true;
 	}
 	
-	public JSONKeyValuePair(String keyIn, JSONArray valueIn) {
+	public JSONKeyValuePair(String keyIn, JsonArray valueIn) {
 		this.key = keyIn;
 		this.clearValues();
 		this.arrayValue = valueIn;
@@ -54,13 +54,13 @@ public class JSONKeyValuePair {
 		this.containsDouble = true;
 	}
 	
-	public void put(JSONObject valueIn) {
+	public void put(JsonObject valueIn) {
 		this.clearValues();
 		this.objectValue = valueIn;
 		this.containsJSONObject = true;
 	}
 	
-	public void put(JSONArray valueIn) {
+	public void put(JsonArray valueIn) {
 		this.clearValues();
 		this.arrayValue = valueIn;
 		this.containsJSONObject = true;
@@ -92,11 +92,11 @@ public class JSONKeyValuePair {
 		this.key = newKey;
 	}
 	
-	public JSONObject getJSONObject() {
+	public JsonObject getJSONObject() {
 		return this.objectValue;
 	}
 	
-	public JSONArray getJSONArray() {
+	public JsonArray getJSONArray() {
 		return this.arrayValue;
 	}
 	
@@ -142,7 +142,6 @@ public class JSONKeyValuePair {
 		this.doubleValue = 0;
 		this.stringValue = null;
 		this.arrayValue = null;
-		
 		this.containsArray = false;
 		this.containsDouble = false;
 		this.containsInteger = false;

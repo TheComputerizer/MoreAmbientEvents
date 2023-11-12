@@ -1,27 +1,19 @@
 package com.daedalus.ambientevents.gui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.apache.logging.log4j.Level;
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.AmbientEvents;
-import com.daedalus.ambientevents.gui.widgets.WVanillaTextField;
-import com.daedalus.ambientevents.gui.widgets.WDropDownMenu;
-import com.daedalus.ambientevents.gui.widgets.WListElement;
-import com.daedalus.ambientevents.gui.widgets.WListView;
+import com.daedalus.ambientevents.client.AmbientEventsClient;
 import com.daedalus.ambientevents.gui.widgets.WPushButton;
+import com.daedalus.ambientevents.gui.widgets.WVanillaTextField;
 import com.daedalus.ambientevents.gui.widgets.WWidget;
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
+import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 
-import net.minecraft.util.ResourceLocation;
+import java.io.IOException;
+import java.util.Objects;
 
 public class ConfiguratorGUI extends WWidget {
 
-	public static JSONObject eventsJSON;
-	public static JSONObject manifestJSON;
-	protected final static String manifestPath = "/assets/ambientevents/manifest.json";
+	public static JsonObject eventsJSON;
+	public static JsonObject manifestJSON;
 
 	protected WPushButton exit;
 	protected EventList eventList;
@@ -29,96 +21,67 @@ public class ConfiguratorGUI extends WWidget {
 	protected ValueTabs valueTabs;
 	
 	protected boolean firstStart = true;
-	
-	protected ClientEventHandler handler;
 
-	public ConfiguratorGUI(ClientEventHandler handlerIn) {
+	public ConfiguratorGUI(Minecraft mc) {
 		super(null);
-		this.handler = handlerIn;
-		if (eventsJSON == null) {
-			eventsJSON = ClientEventHandler.eventsJSON;
-		}
-		
-		if (manifestJSON == null) {
-			byte b[] = new byte[4096];
-			try {
-				getClass().getResourceAsStream(manifestPath).read(b);
-			} catch (IOException e) {
-				AmbientEvents.logger.log(Level.ERROR, e);
-			}
-			manifestJSON = new JSONObject(new String(b));
-		}
+		manifestJSON = AmbientEventsClient.readManifest(mc.getResourceManager());
+		if(Objects.isNull(manifestJSON)) manifestJSON = new JsonObject();
 	}
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
-		this.draw(mouseX, mouseY, partialTicks);
-
-		super.drawScreen(mouseX, mouseY, partialTicks);
+		this.draw(mouseX,mouseY,partialTicks);
+		super.drawScreen(mouseX,mouseY,partialTicks);
 	}
 
 	@Override
 	public void initGui() {
 		super.initGui();
-
 		int exitHeight = 12;
-		
-		if (this.firstStart) {
+		if(this.firstStart) {
 			this.palette = new Palette();
-			this.exit = new WPushButton(this, "Exit");
+			this.exit = new WPushButton(this,"Exit");
 			this.eventList = new EventList(this);
 			this.subLists = new SubLists(this);
 			this.valueTabs = new ValueTabs(this);
 		}
-		
-		this.eventList.setSize(this.width/2, this.height/2);
+		this.eventList.setSize(this.width/2,this.height/2);
 		this.eventList.setOnEventSelectedAction(this.subLists::populate);
-		
-		this.subLists.setSize(this.width/2, this.height/2);
-		this.subLists.move(this.width/2, 0);
+		this.subLists.setSize(this.width/2,this.height/2);
+		this.subLists.move(this.width/2,0);
 		this.subLists.setOnElementSelectedAction(this.valueTabs::populate);
-		
-		this.exit.setSize(50, exitHeight);
-		this.exit.move(this.width / 2 - 25, this.height - exitHeight);
+		this.exit.setSize(50,exitHeight);
+		this.exit.move(this.width/2-25,this.height-exitHeight);
 		this.exit.setOnClickAction(this::exit);
-		
-		this.valueTabs.setSize(this.width, this.height/2 - exitHeight);
-		this.valueTabs.move(0, this.height/2);
-
+		this.valueTabs.setSize(this.width,this.height/2-exitHeight);
+		this.valueTabs.move(0,this.height/2);
 		this.show();
-		
 		this.firstStart = false;
 	}
 
 	@Override
 	public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-		this.onMouseClick(mouseX, mouseY, mouseButton);
+		super.mouseClicked(mouseX,mouseY,mouseButton);
+		this.onMouseClick(mouseX,mouseY,mouseButton);
 	}
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
-		super.mouseReleased(mouseX, mouseY, state);
-		this.onMouseRelease(mouseX, mouseY, state);
+		super.mouseReleased(mouseX,mouseY,state);
+		this.onMouseRelease(mouseX,mouseY,state);
 	}
 
 	@Override
 	protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-		super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-		this.onMouseDrag(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+		super.mouseClickMove(mouseX,mouseY,clickedMouseButton,timeSinceLastClick);
+		this.onMouseDrag(mouseX,mouseY,clickedMouseButton,timeSinceLastClick);
 	}
 
 	@Override
 	public void keyTyped(char typedChar, int keyCode) throws IOException {
-		super.keyTyped(typedChar, keyCode);
-		this.onKeyTyped(typedChar, keyCode);
-	}
-
-	@Override
-	public void onGuiClosed() {
-		
-		super.onGuiClosed();
+		super.keyTyped(typedChar,keyCode);
+		this.onKeyTyped(typedChar,keyCode);
 	}
 	
 	public void exit(int i) {

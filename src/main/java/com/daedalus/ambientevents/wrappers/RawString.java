@@ -1,5 +1,7 @@
 package com.daedalus.ambientevents.wrappers;
 
+import java.util.Random;
+
 public class RawString implements IString {
 
 	protected String value;
@@ -9,8 +11,7 @@ public class RawString implements IString {
 	}
 
 	@Override
-	public String getValue() {
+	public String getValue(Random rand) {
 		return this.value;
 	}
-
 }

@@ -1,77 +1,58 @@
 package com.daedalus.ambientevents.wrappers;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
 public class RandomPickString implements IString {
 
-	protected ArrayList<WeightedString> values;
+	protected final List<WeightedString> values;
 	protected double total;
 
-	public RandomPickString(JSONObject args) throws Exception {
-		if (args.has("text")) {
-
-			Object text = args.get("text");
-			if (text instanceof JSONArray) {
-
-				int max = ((JSONArray) text).length();
-				this.values = new ArrayList<WeightedString>(max);
-
-				for (int i = 0; i < max; i++) {
-					Object string = ((JSONArray) text).get(i);
-					if (string instanceof String) {
-						this.values.add(new WeightedString((String) string, 1.0D));
-					} else if (string instanceof JSONObject) {
+	public RandomPickString(JsonObject args) throws JsonIOException {
+		this.values = new ArrayList<>();
+		if(args.has("text")) {
+			JsonElement text = args.get("text");
+			if(text instanceof JsonArray) {
+				for(JsonElement element : ((JsonArray)text)) {
+					if(element instanceof JsonObject) {
+						JsonObject string = (JsonObject)element;
 						WeightedString ws = new WeightedString();
-						if (((JSONObject) string).has("string")) {
-							ws.string = ((JSONObject) string).getString("string");
-						} else {
-							throw new Exception("No string specified");
-						}
-						if (((JSONObject) string).has("weight")) {
-							ws.weight = ((JSONObject) string).getDouble("weight");
-						} else {
-							ws.weight = 1;
-						}
+						if(string.has("string")) ws.string = string.get("string").getAsString();
+						else throw new JsonIOException("No string specified");
+						if(string.has("weight")) ws.weight = string.get("weight").getAsDouble();
+						else ws.weight = 1;
 						this.values.add(ws);
-					}
+					} else this.values.add(new WeightedString(element.getAsString(),1d));
 				}
-			} else {
-				throw new Exception("Unrecognized text value specified");
-			}
-		} else {
-			throw new Exception("No text specified");
-		}
-
-		for (int i = 0; i < this.values.size(); i++) {
-			this.total += this.values.get(i).weight;
-		}
+			} else throw new JsonIOException("Unrecognized text value specified");
+		} else throw new JsonIOException("No text specified");
+        for(WeightedString value : this.values) this.total+=value.weight;
 	}
 
 	@Override
-	public String getValue() {
-		double test = ClientEventHandler.random.nextDouble() * this.total;
+	public String getValue(Random rand) {
+		double test = rand.nextDouble()*this.total;
 		double subtotal = 0;
-		for (int i = 0; i < this.values.size(); i++) {
-			subtotal += this.values.get(i).weight;
-			if (test < subtotal) {
-				return this.values.get(i).string;
-			}
-		}
+        for(WeightedString value : this.values) {
+            subtotal+=value.weight;
+            if(test<subtotal) return value.string;
+        }
 
 		return "";
 	}
 
-	protected class WeightedString {
+	protected static class WeightedString {
+
 		public String string;
 		public double weight;
 
-		public WeightedString() {
-		}
+		public WeightedString() {}
 
 		public WeightedString(String stringIn, double weightIn) {
 			this.string = stringIn;

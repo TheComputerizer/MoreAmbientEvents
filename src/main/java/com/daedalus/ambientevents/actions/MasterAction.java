@@ -1,51 +1,40 @@
 package com.daedalus.ambientevents.actions;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
 import net.minecraft.entity.player.EntityPlayer;
 
 public class MasterAction implements IAction {
 
-	public static IAction newAction(JSONObject args) throws Exception {
+	public static IAction newAction(JsonObject args) throws JsonIOException {
 		// Factory method for creating new actions from JSON based config
-
-		if (args.has("type")) {
-			switch (args.getString("type")) {
-
-			case "lightning":
-				return new LightningAction(args);
-			case "chat":
-				return new ChatAction(args);
-			case "potioneffect":
-				return new PotionEffectAction(args);
-			case "playsound":
-				return new PlaySoundAction(args);
-
-			default:
-				throw new Exception("Unrecogized action type: " + args.getString("type"));
+		if(args.has("type")) {
+			String actionType = args.get("type").getAsString();
+			switch(actionType) {
+				case "lightning": return new LightningAction(args);
+				case "chat": return new ChatAction(args);
+				case "potioneffect": return new PotionEffectAction(args);
+				case "playsound": return new PlaySoundAction(args);
+				default: throw new JsonIOException("Unrecogized action type: "+actionType);
 			}
-		} else {
-			throw new Exception("No type specified");
-		}
-
+		} else throw new JsonIOException("No type specified for action!");
 	}
 
-	ArrayList<IAction> actions;
+	private final List<IAction> actions;
 
-	public MasterAction(JSONArray args) throws Exception {
-		this.actions = new ArrayList<IAction>();
-		for (int i = 0; i < args.length(); i++) {
-			this.actions.add(newAction(args.getJSONObject(i)));
-		}
+	public MasterAction(JsonArray args) throws JsonIOException {
+		this.actions = new ArrayList<>();
+		for(JsonElement json : args) this.actions.add(newAction((JsonObject)json));
 	}
 
 	@Override
 	public void execute(EntityPlayer player) {
-		for (int i = 0; i < this.actions.size(); i++) {
-			this.actions.get(i).execute(player);
-		}
+        for(IAction action : this.actions) action.execute(player);
 	}
 }

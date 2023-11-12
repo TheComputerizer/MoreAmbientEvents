@@ -1,5 +1,8 @@
 package com.daedalus.ambientevents.wrappers;
 
+import java.util.Random;
+
 public interface INumber {
-	public double getValue();
+
+	double getValue(Random rand);
 }

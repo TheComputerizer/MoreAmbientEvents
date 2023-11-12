@@ -1,6 +1,7 @@
 package com.daedalus.ambientevents.actions;
 
-import org.json.JSONObject;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
 import com.daedalus.ambientevents.wrappers.IString;
 import com.daedalus.ambientevents.wrappers.Wrapper;
@@ -12,19 +13,14 @@ public class ChatAction extends CommonAction {
 
 	protected IString message;
 
-	public ChatAction(JSONObject args) throws Exception {
+	public ChatAction(JsonObject args) throws JsonIOException {
 		super(args);
-
-		if (args.has("message")) {
-			this.message = Wrapper.newString(args.get("message"));
-		} else {
-			throw new Exception("No message specified");
-		}
+		if(args.has("message")) this.message = Wrapper.newString(args.get("message"));
+		else throw new JsonIOException("No message specified");
 	}
 
 	@Override
 	public void execute(EntityPlayer player) {
 		player.sendMessage(new TextComponentString(this.message.getValue()));
 	}
-
 }

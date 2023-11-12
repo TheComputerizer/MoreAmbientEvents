@@ -11,36 +11,36 @@ public class WVanillaButton extends WAbstractButton {
 	protected int buttonID;
 	protected String buttonText;
 
-	public WVanillaButton(WWidget parentIn, int ID, String text) {
-		this(parentIn, ID, 0, 0, 0, 0, text);
+	public WVanillaButton(WWidget parent, int ID, String text) {
+		this(parent,ID,0,0,0,0,text);
 	}
 
-	public WVanillaButton(WWidget parentIn, int ID, int x, int y, int widthIn, int heightIn, String text) {
-		super(parentIn);
+	public WVanillaButton(WWidget parent, int ID, int x, int y, int width, int height, String text) {
+		super(parent);
 		this.buttonID = ID;
 		this.buttonText = text;
 		this.initGui();
-		this.setSize(widthIn, heightIn);
+		this.setSize(width,height);
 		this.move(x, y);
 	}
 
 	@Override
 	public void initGui() {
-		this.button = new GuiButton(this.buttonID, 0, 0, 0, 0, this.buttonText);
+		this.button = new GuiButton(this.buttonID,0,0,0,0,this.buttonText);
 	}
 
 	@Override
-	public void setSize(int widthIn, int heightIn) {
-		super.setSize(widthIn, heightIn);
-		this.button.width = widthIn;
-		this.button.height = heightIn;
+	public void setSize(int width, int height) {
+		super.setSize(width,height);
+		this.button.width = width;
+		this.button.height = height;
 	}
 
 	@Override
 	public void draw(int mouseX, int mouseY, float partialTicks) {
 		if (this.visible) {
-			super.draw(mouseX, mouseY, partialTicks);
-			this.button.func_191745_a(this.mc, mouseX, mouseY, partialTicks);
+			super.draw(mouseX,mouseY,partialTicks);
+			this.button.drawButton(this.mc,mouseX,mouseY,partialTicks);
 		}
 	}
 }

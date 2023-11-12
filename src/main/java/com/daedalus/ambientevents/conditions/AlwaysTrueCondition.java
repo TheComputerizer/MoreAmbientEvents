@@ -8,5 +8,4 @@ public class AlwaysTrueCondition implements ICondition {
 	public boolean isMet(EntityPlayer player) {
 		return true;
 	}
-
 }

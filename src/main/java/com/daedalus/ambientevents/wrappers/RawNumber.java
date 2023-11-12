@@ -1,5 +1,7 @@
 package com.daedalus.ambientevents.wrappers;
 
+import java.util.Random;
+
 public class RawNumber implements INumber {
 
 	protected double value;
@@ -9,8 +11,7 @@ public class RawNumber implements INumber {
 	}
 
 	@Override
-	public double getValue() {
+	public double getValue(Random rand) {
 		return this.value;
 	}
-
 }

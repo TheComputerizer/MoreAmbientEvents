@@ -1,8 +1,11 @@
 package com.daedalus.ambientevents.gui;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,65 +21,52 @@ public class SubListEditor extends WWidget {
 	protected WPushButton deleteButton;
 	protected WDropDownMenu<String> dropMenu;
 	
-	protected WListView<JSONObject> listView;
-	protected JSONArray array;
+	protected WListView<JsonObject> listView;
+	protected JsonArray array;
 	protected String type;
 	
-	protected WListElement<JSONObject> selected;
+	protected WListElement<JsonObject> selected;
 	
 	protected int padding = 2;
 	
-	public SubListEditor(WWidget parentIn, String typeIn) {
-		super(parentIn);
-		this.type = typeIn;
-		
-		this.listView = new WListView<JSONObject>(this);
+	public SubListEditor(WWidget parent, String type) {
+		super(parent);
+		this.type = type;
+		this.listView = new WListView<>(this);
 		this.listView.setOnElementSelectedAction(this::elementSelected);
-		
 		this.newButton = new WPushButton(this, "New");
 		this.newButton.setOnClickAction(this::newElement);
-		
 		this.duplicateButton = new WPushButton(this, "Duplicate");
 		this.duplicateButton.setOnClickAction(this::duplicateElement);
-		
 		this.deleteButton = new WPushButton(this, "Delete");
 		this.deleteButton.setOnClickAction(this::deleteSelected);
-		
-		this.dropMenu = new WDropDownMenu<String>(this);
+		this.dropMenu = new WDropDownMenu<>(this);
 		if (ConfiguratorGUI.manifestJSON.has("events")) {
 			if (ConfiguratorGUI.manifestJSON.getJSONObject("events").has(this.type)) {
 				Iterator<String> keys = ConfiguratorGUI.manifestJSON.getJSONObject("events").getJSONObject(this.type).keys();
 				while(keys.hasNext()) {
 					String key = keys.next();
-					this.dropMenu.add(new WListElement(key, key));
+					this.dropMenu.add(new WListElement<>(key,key));
 				}
 			}
 		}
 	}
 	
 	@Override
-	public void setSize(int widthIn, int heightIn) {
-		super.setSize(widthIn, heightIn);
-		
-		int textHeight = this.fontRendererObj.FONT_HEIGHT + this.padding * 2; 
-		
-		int sizeX = this.width - this.padding;
-		
-		this.newButton.setSize((this.width - this.padding) / 3, textHeight);
-		this.newButton.move(this.padding, 0);
-		
-		this.duplicateButton.setSize(this.newButton.width, this.newButton.height);
-		this.duplicateButton.move(this.newButton.width +  this.newButton.offsetX, this.newButton.offsetY);
-		
-		this.deleteButton.setSize(sizeX - 2 * this.newButton.width, this.newButton.height);
-		this.deleteButton.move(this.duplicateButton.width + this.duplicateButton.offsetX, this.newButton.offsetY);
-		
-		this.dropMenu.setSize(sizeX - this.listView.scrollBarWidth, textHeight);
-		this.dropMenu.move(this.padding, this.newButton.height);
-		
-		this.listView.setSize(sizeX, this.height - this.dropMenu.height - this.dropMenu.offsetY);
-		this.listView.move(this.padding, this.dropMenu.height + this.dropMenu.offsetY);
-		
+	public void setSize(int width, int height) {
+		super.setSize(width,height);
+		int textHeight = this.fontRenderer.FONT_HEIGHT+this.padding*2;
+		int sizeX = this.width-this.padding;
+		this.newButton.setSize((this.width-this.padding)/3,textHeight);
+		this.newButton.move(this.padding,0);
+		this.duplicateButton.setSize(this.newButton.width,this.newButton.height);
+		this.duplicateButton.move(this.newButton.width+this.newButton.offsetX,this.newButton.offsetY);
+		this.deleteButton.setSize(sizeX-2*this.newButton.width,this.newButton.height);
+		this.deleteButton.move(this.duplicateButton.width+this.duplicateButton.offsetX,this.newButton.offsetY);
+		this.dropMenu.setSize(sizeX-this.listView.scrollBarWidth,textHeight);
+		this.dropMenu.move(this.padding,this.newButton.height);
+		this.listView.setSize(sizeX,this.height-this.dropMenu.height-this.dropMenu.offsetY);
+		this.listView.move(this.padding,this.dropMenu.height+this.dropMenu.offsetY);
 		this.dropMenu.setMaxMenuLength(this.listView.height);
 	}
 	
@@ -84,47 +74,34 @@ public class SubListEditor extends WWidget {
 		this.selectedCallback = onElementSelectedAction;
 	}
 	
-	public void elementSelected(WListElement<JSONObject> element) {
+	public void elementSelected(WListElement<JsonObject> element) {
 		this.selected = element;
-		if (this.selectedCallback != null) {
-			this.selectedCallback.accept(new JSONKeyValuePair(this.type, element.item));
-		}
+		if(Objects.nonNull(this.selectedCallback))
+			this.selectedCallback.accept(new JSONKeyValuePair(this.type,element.item));
 	}
 	
 	public void newElement(int mouseButton) {
-		if (this.array == null) {
-			return;
-		}
-		JSONObject newJSON = new JSONObject();
-		newJSON.put("type", this.dropMenu.getSelected().item);
+		if(Objects.isNull(this.array)) return;
+		JsonObject newJSON = new JsonObject();
+		newJSON.put("type",this.dropMenu.getSelected().item);
 		this.array.put(newJSON);
-		this.listView.add(new WListElement(this.dropMenu.getSelected().text, newJSON));
+		this.listView.add(new WListElement<>(this.dropMenu.getSelected().text,newJSON));
 	}
 	
 	public void duplicateElement(int mouseButton) {
-		if (this.selected == null) {
-			return;
-		}
-		
-		JSONObject newJSON = copyJSONObject(this.selected.item);
-		
-		array.put(newJSON);
-		WListElement<JSONObject> newElement = new WListElement<JSONObject> (newJSON.getString("type"), newJSON);
-
+		if(Objects.isNull(this.selected)) return;
+		JsonObject newJSON = copyJSONObject(this.selected.item);
+		this.array.put(newJSON);
+		WListElement<JsonObject> newElement = new WListElement<>(newJSON.getString("type"), newJSON);
 		this.listView.add(newElement);
 	}
 	
 	public void deleteSelected(int mouseButton) {
-		if (this.selected == null) {
-			return;
-		}
+		if(Objects.isNull(this.selected)) return;
 		int index = this.listView.getIndex(this.selected);
-		
 		this.array.remove(index);
 		this.listView.remove(this.selected);
-		if (index >= this.listView.getSize()) {
-			index = this.listView.getSize() - 1;
-		} 
+		if(index>=this.listView.getSize()) index = this.listView.getSize()-1;
 		this.listView.select(index);
 	}
 	
@@ -138,13 +115,11 @@ public class SubListEditor extends WWidget {
 		this.listView.clear();
 	}
 	
-	public void populate(JSONArray arrayIn) {
-		this.array = arrayIn;
+	public void populate(JsonArray array) {
+		this.array = array;
 		this.listView.clear();
-		for (int i = 0; i < arrayIn.length(); i++) {
-			if (arrayIn.getJSONObject(i).has("type")) {
-				this.listView.add(new WListElement<JSONObject>(arrayIn.getJSONObject(i).getString("type"), arrayIn.getJSONObject(i)));
-			}
-		}
+		for(int i = 0; i < array.length(); i++)
+			if(array.getJSONObject(i).has("type"))
+				this.listView.add(new WListElement<>(array.getJSONObject(i).getString("type"),array.getJSONObject(i)));
 	}
 }

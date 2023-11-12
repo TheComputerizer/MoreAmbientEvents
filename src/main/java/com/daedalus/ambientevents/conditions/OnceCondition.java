@@ -8,9 +8,7 @@ public class OnceCondition implements ICondition {
 
 	@Override
 	public boolean isMet(EntityPlayer player) {
-		if (this.fired) {
-			return false;
-		}
+		if(this.fired) return false;
 		this.fired = true;
 		return true;
 	}

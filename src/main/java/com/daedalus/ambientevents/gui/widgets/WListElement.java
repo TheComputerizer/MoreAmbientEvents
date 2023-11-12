@@ -7,8 +7,8 @@ public class WListElement<T> {
 	
 	public WListElement() {}
 	
-	public WListElement (String textIn, T itemIn) {
-		this.text = textIn;
-		this.item = itemIn;
+	public WListElement (String text, T item) {
+		this.text = text;
+		this.item = item;
 	}
 }

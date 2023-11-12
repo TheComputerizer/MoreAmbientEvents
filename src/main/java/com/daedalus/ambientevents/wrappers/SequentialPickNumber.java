@@ -1,44 +1,35 @@
 package com.daedalus.ambientevents.wrappers;
 
-import java.util.ArrayList;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class SequentialPickNumber implements INumber {
 
-	protected ArrayList<Double> values;
+	protected final List<Double> values;
 	protected int index;
 	protected int max;
 
-	public SequentialPickNumber(JSONObject args) throws Exception {
-		if (args.has("text")) {
-
-			Object text = args.get("text");
-			if (text instanceof JSONArray) {
-
-				this.max = ((JSONArray) text).length();
-				this.values = new ArrayList<Double>(this.max);
-
-				for (int i = 0; i < this.max; i++) {
-					this.values.add(((JSONArray) text).getDouble(i));
-
-				}
-			} else {
-				throw new Exception("Unrecognized text value specified");
-			}
-		} else {
-			throw new Exception("No text specified");
-		}
+	public SequentialPickNumber(JsonObject args) throws JsonIOException {
+		this.values = new ArrayList<>();
+		if(args.has("text")) {
+			JsonElement text = args.get("text");
+			if(text instanceof JsonArray) {
+				JsonArray array = (JsonArray)text;
+				this.max = array.size();
+				for(JsonElement element : array) this.values.add(element.getAsDouble());
+			} else throw new JsonIOException("Unrecognized text value specified");
+		} else throw new JsonIOException("No text specified");
 	}
 
 	@Override
-	public double getValue() {
-		if (this.index == this.max) {
-			this.index = 0;
-		}
-
+	public double getValue(Random rand) {
+		if(this.index==this.max) this.index = 0;
 		return this.values.get(this.index++);
 	}
-
 }

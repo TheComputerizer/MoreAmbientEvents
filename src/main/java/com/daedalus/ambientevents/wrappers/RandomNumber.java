@@ -1,26 +1,19 @@
 package com.daedalus.ambientevents.wrappers;
 
-import org.json.JSONObject;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
 
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
+import java.util.Random;
 
 public class RandomNumber implements INumber {
 
 	private double upperBound = 0;
 	private double lowerBound = 0;
 
-	public RandomNumber(JSONObject args) throws Exception {
-		if (args.has("upperbound")) {
-			this.upperBound = args.getDouble("upperbound");
-		}
-
-		if (args.has("lowerbound")) {
-			this.lowerBound = args.getDouble("lowerbound");
-		}
-
-		if (this.upperBound == this.lowerBound) {
-			throw new Exception("Invalid bounds for random number");
-		}
+	public RandomNumber(JsonObject args) throws JsonIOException {
+		if(args.has("upperbound")) this.upperBound = args.get("upperbound").getAsDouble();
+		if(args.has("lowerbound")) this.lowerBound = args.get("lowerbound").getAsDouble();
+		if(this.upperBound==this.lowerBound) throw new JsonIOException("Invalid bounds for random number");
 	}
 
 	public RandomNumber(double lowerIn, double upperIn) {
@@ -29,9 +22,8 @@ public class RandomNumber implements INumber {
 	}
 
 	@Override
-	public double getValue() {
-
-		return ClientEventHandler.random.nextDouble() * (this.upperBound - this.lowerBound) + this.lowerBound;
+	public double getValue(Random rand) {
+		return rand.nextDouble()*(this.upperBound-this.lowerBound)+this.lowerBound;
 	}
 
 }

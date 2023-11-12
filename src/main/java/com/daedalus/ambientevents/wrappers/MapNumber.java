@@ -1,10 +1,12 @@
 package com.daedalus.ambientevents.wrappers;
 
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
-
+import com.daedalus.ambientevents.client.AmbientEventsClient;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.Random;
 
 public class MapNumber implements INumber {
 
@@ -15,86 +17,62 @@ public class MapNumber implements INumber {
 	protected boolean clamp;
 	protected String input;
 
-	public static EntityPlayer player;
-
-	public MapNumber(JSONObject args) throws Exception {
-		if (args.has("input")) {
-			this.input = args.getString("input");
-		} else {
-			throw new Exception("No input specified");
-		}
-
-		if (args.has("inlow")) {
-			this.inLow = args.getDouble("inlow");
-		} else {
-			this.inLow = 0;
-		}
-
-		if (args.has("inhigh")) {
-			this.inHigh = args.getDouble("inhigh");
-		} else {
-			throw new Exception("No input high specified");
-		}
-
-		if (args.has("outlow")) {
-			this.outLow = args.getDouble("outlow");
-		} else {
-			this.outLow = 0;
-		}
-
-		if (args.has("outhigh")) {
-			this.outHigh = args.getDouble("outhigh");
-		} else {
-			throw new Exception("No output high specified");
-		}
-
-		if (args.has("clamp")) {
-			this.clamp = args.getString("clamp").equals("true");
-		} else {
-			this.clamp = false;
-		}
+	public MapNumber(JsonObject args) throws JsonIOException {
+		if(args.has("input")) this.input = args.get("input").getAsString();
+		else throw new JsonIOException("No input specified");
+		if(args.has("inlow")) this.inLow = args.get("inlow").getAsDouble();
+		else this.inLow = 0;
+		if(args.has("inhigh")) this.inHigh = args.get("inhigh").getAsDouble();
+		else throw new JsonIOException("No input high specified");
+		if(args.has("outlow")) this.outLow = args.get("outlow").getAsDouble();
+		else this.outLow = 0;
+		if(args.has("outhigh")) this.outHigh = args.get("outhigh").getAsDouble();
+		else throw new JsonIOException("No output high specified");
+		if(args.has("clamp")) this.clamp = args.get("clamp").getAsString().equals("true");
+		else this.clamp = false;
 	}
 
 	@Override
-	public double getValue() {
-
+	public double getValue(Random rand) {
 		double value = 0;
-
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		switch (this.input) {
-
-		case "playerposx":
-			value = player.posX;
-		case "playerposy":
-			value = player.posY;
-		case "playerposz":
-			value = player.posZ;
-		case "timeofday":
-			value = player.world.getWorldTime();
-		case "worldtime":
-			value = player.world.getTotalWorldTime() / 24000.0d;
-		case "timesincesleep":
-			value = (player.world.getTotalWorldTime() - ClientEventHandler.lastSleep) / 24000.0d;
+			case "playerposx":
+				value = player.posX;
+				break;
+			case "playerposy":
+				value = player.posY;
+				break;
+			case "playerposz":
+				value = player.posZ;
+				break;
+			case "timeofday":
+				value = player.world.getWorldTime();
+				break;
+			case "worldtime":
+				value = player.world.getTotalWorldTime()/24000d;
+				break;
+			case "timesincesleep":
+				value = (player.world.getTotalWorldTime() -AmbientEventsClient.lastSleep)/24000d;
 		}
 
 		double output = (value - this.inLow) / (this.inHigh - this.inLow) * (this.outHigh - this.outLow) + this.outLow;
 
-		if (this.clamp) {
-			if (this.inHigh > this.inLow) {
-				if (value > this.inHigh) {
+		if(this.clamp) {
+			if(this.inHigh > this.inLow) {
+				if(value > this.inHigh) {
 					output = this.outHigh;
-				} else if (value < this.inLow) {
+				} else if(value < this.inLow) {
 					output = this.outLow;
 				}
 			} else {
-				if (value < this.inHigh) {
+				if(value < this.inHigh) {
 					output = this.outHigh;
-				} else if (value > this.inLow) {
+				} else if(value > this.inLow) {
 					output = this.outLow;
 				}
 			}
 		}
-
 		return output;
 	}
-
 }

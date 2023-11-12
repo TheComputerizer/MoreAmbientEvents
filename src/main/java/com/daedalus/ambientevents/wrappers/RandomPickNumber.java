@@ -1,82 +1,61 @@
 package com.daedalus.ambientevents.wrappers;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+
 import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.handlers.ClientEventHandler;
+import java.util.List;
+import java.util.Random;
 
 public class RandomPickNumber implements INumber {
 
-	protected ArrayList<WeightedNumber> values;
+	protected final List<WeightedNumber> values;
 	protected double total;
 
-	public RandomPickNumber(JSONObject args) throws Exception {
-		if (args.has("value")) {
-
-			Object value = args.get("value");
-			if (value instanceof JSONArray) {
-
-				int max = ((JSONArray) value).length();
-				this.values = new ArrayList<WeightedNumber>(max);
-
-				for (int i = 0; i < max; i++) {
-					Object number = ((JSONArray) value).get(i);
-					if (number instanceof Double) {
-						this.values.add(new WeightedNumber((double) number, 1.0D));
-					} else if (number instanceof JSONObject) {
+	public RandomPickNumber(JsonObject args) throws JsonIOException {
+		this.values = new ArrayList<>();
+		if(args.has("value")) {
+			JsonElement value = args.get("value");
+			if(value instanceof JsonArray) {
+				for(JsonElement element : ((JsonArray)value)) {
+					if(element instanceof JsonObject) {
+						JsonObject number = (JsonObject)element;
 						WeightedNumber wn = new WeightedNumber();
-						if (((JSONObject) number).has("string")) {
-							wn.number = ((JSONObject) number).getDouble("number");
-						} else {
-							throw new Exception("No string specified");
-						}
-						if (((JSONObject) number).has("weight")) {
-							wn.weight = ((JSONObject) number).getDouble("weight");
-						} else {
-							wn.weight = 1;
-						}
+						if(number.has("string")) wn.number = number.get("number").getAsDouble();
+						else throw new JsonIOException("No string specified");
+						if(number.has("weight")) wn.weight = number.get("weight").getAsDouble();
+						else wn.weight = 1;
 						this.values.add(wn);
-					}
+					} else this.values.add(new WeightedNumber(element.getAsDouble(),1d));
 				}
-			} else {
-				throw new Exception("Unrecognized text value specified");
-			}
-		} else {
-			throw new Exception("No text specified");
-		}
-
-		for (int i = 0; i < this.values.size(); i++) {
-			this.total += this.values.get(i).weight;
-		}
+			} else throw new JsonIOException("Unrecognized text value specified");
+		} else throw new JsonIOException("No text specified");
+        for(WeightedNumber value : this.values) this.total+=value.weight;
 	}
 
 	@Override
-	public double getValue() {
-		double test = ClientEventHandler.random.nextDouble() * this.total;
+	public double getValue(Random rand) {
+		double test = rand.nextDouble()*this.total;
 		double subtotal = 0;
-		for (int i = 0; i < this.values.size(); i++) {
-			subtotal += this.values.get(i).weight;
-			if (test < subtotal) {
-				return this.values.get(i).number;
-			}
-		}
+        for(WeightedNumber value : this.values) {
+            subtotal+=value.weight;
+            if(test<subtotal) return value.number;
+        }
 
 		return 0;
 	}
 
-	protected class WeightedNumber {
+	protected static class WeightedNumber {
 		public double number;
 		public double weight;
 
-		public WeightedNumber() {
-		}
+		public WeightedNumber() {}
 
 		public WeightedNumber(double numberIn, double weightIn) {
 			this.number = numberIn;
 			this.weight = weightIn;
 		}
 	}
-
 }
