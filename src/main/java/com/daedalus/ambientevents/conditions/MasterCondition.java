@@ -2,7 +2,9 @@ package com.daedalus.ambientevents.conditions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
@@ -10,32 +12,37 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import javax.annotation.Nullable;
+
 public class MasterCondition implements ICondition {
 
-	public static ICondition newCondition(JsonObject args) throws JsonIOException {
-		// Factory method for creating new conditions from JSON based config
-		if(args.has("type")) {
-			String type = args.get("type").getAsString();
-			switch(type) {
-				case "playerpos": return new PlayerPosCondition(args);
+	public static ICondition newCondition(@Nullable JsonObject json) throws JsonIOException {
+		if(Objects.isNull(json)) throw new JsonIOException("Invalid condition");
+		String actionType = ParsingUtils.getAsString(json,"type",true);
+		if(Objects.nonNull(actionType)) {
+			switch(actionType) {
+				case "playerpos": return new PlayerPosCondition(json);
 				case "alwaystrue": return new AlwaysTrueCondition();
-				case "chance": return new ChanceCondition(args);
-				case "timeofday": return new TimeOfDayCondition(args);
-				case "worldtime": return new WorldTimeCondition(args);
-				case "timesincesleep": return new TimeSinceSleepCondition(args);
+				case "chance": return new ChanceCondition(json);
+				case "timeofday": return new TimeOfDayCondition(json);
+				case "worldtime": return new WorldTimeCondition(json);
+				case "timesincesleep": return new TimeSinceSleepCondition(json);
 				case "once": return new OnceCondition();
-				case "weather": return new WeatherCondition(args);
+				case "weather": return new WeatherCondition(json);
 				case "canseesky": return new CanSeeSkyCondition();
-				default: throw new JsonIOException("Unrecogized condition type: "+type);
+				default: throw new JsonIOException("Unrecogized condition type: "+actionType);
 			}
-		} else throw new JsonIOException("No type specified");
+		}
+		return null;
 	}
 
 	private final List<ICondition> conditions;
 
-	public MasterCondition(JsonArray args) throws JsonIOException {
+	public MasterCondition(@Nullable JsonArray json) throws JsonIOException {
 		this.conditions = new ArrayList<>();
-		for(JsonElement element : args) this.conditions.add(newCondition((JsonObject)element));
+		if(Objects.nonNull(json))
+			for(JsonElement element : json)
+				this.conditions.add(newCondition(ParsingUtils.getAsObject(element)));
 	}
 
 	@Override

@@ -1,9 +1,7 @@
-package com.daedalus.ambientevents.gui.widgets;
+package com.daedalus.ambientevents.client.gui.widgets;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import com.daedalus.ambientevents.actions.PlaySoundAction;
 
 import net.minecraft.util.SoundCategory;
 

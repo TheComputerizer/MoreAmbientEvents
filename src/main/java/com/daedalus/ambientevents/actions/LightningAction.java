@@ -2,7 +2,8 @@ package com.daedalus.ambientevents.actions;
 
 import com.daedalus.ambientevents.wrappers.INumber;
 import com.daedalus.ambientevents.wrappers.IString;
-import com.daedalus.ambientevents.wrappers.Wrapper;
+import com.daedalus.ambientevents.wrappers.NumberType;
+import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.effect.EntityLightningBolt;
@@ -19,28 +20,27 @@ public class LightningAction extends CommonAction {
 	protected double y;
 	protected double z;
 
-	public LightningAction(JsonObject args) throws JsonIOException {
-		super(args);
-		if(args.has("target")) this.target = Wrapper.newString(args.get("target"));
-		else this.target = Wrapper.newString("player");
-		if(args.has("radius")) this.radius = Wrapper.newNumber(args.get("radius"));
-		else this.radius = Wrapper.newNumber(1);
+	public LightningAction(JsonObject json) throws JsonIOException {
+		super(json);
+		this.target = StringType.tryAutoParse(json,"player",true);
+		this.radius = NumberType.tryAutoParse(json,"radius",true);
 	}
 
 	@Override
 	public void execute(EntityPlayer player) {
 		Random rand = player.world.rand;
-		if(this.chance.getValue(rand)<1) {
-			switch (this.target.getValue()) {
+		if(this.chance.getValue(rand).doubleValue()<1d) {
+			switch (this.target.getValue(rand)) {
 			case "player":
 				this.x = player.posX;
 				this.y = player.posY;
 				this.z = player.posZ;
 				break;
 			case "nearplayer":
-				this.x = player.posX+rand.nextInt((int)this.radius.getValue(rand)*2)-this.radius.getValue(rand);
+				int radiusInt = this.radius.getValue(rand).intValue();
+				this.x = player.posX+rand.nextInt(radiusInt*2)-radiusInt;
 				this.y = player.posY;
-				this.z = player.posZ+rand.nextInt((int)this.radius.getValue(rand)*2)-this.radius.getValue(rand);
+				this.z = player.posZ+rand.nextInt(radiusInt*2)-radiusInt;
 				break;
 			default:
 				this.x = 0;

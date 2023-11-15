@@ -1,9 +1,9 @@
 package com.daedalus.ambientevents.conditions;
 
+import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 
 import com.daedalus.ambientevents.wrappers.IString;
-import com.daedalus.ambientevents.wrappers.Wrapper;
 
 import com.google.gson.JsonObject;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,9 +12,8 @@ public class WeatherCondition implements ICondition {
 
 	protected IString condition;
 
-	public WeatherCondition(JsonObject args) throws JsonIOException {
-		if(args.has("condition")) this.condition = Wrapper.newString(args.get("condition"));
-		else throw new JsonIOException("No weather conditions specified");
+	public WeatherCondition(JsonObject json) throws JsonIOException {
+		this.condition = StringType.tryAutoParse(json,"condition",true);
 	}
 
 	@Override

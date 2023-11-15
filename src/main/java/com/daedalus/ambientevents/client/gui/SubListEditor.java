@@ -1,16 +1,15 @@
-package com.daedalus.ambientevents.gui;
+package com.daedalus.ambientevents.client.gui;
 
-import java.util.Iterator;
+import com.daedalus.ambientevents.ParsingUtils;
+import com.daedalus.ambientevents.client.gui.widgets.*;
+import com.daedalus.ambientevents.wrappers.JSONKeyValuePair;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.daedalus.ambientevents.gui.widgets.*;
-import com.daedalus.ambientevents.wrappers.JSONKeyValuePair;
 
 public class SubListEditor extends WWidget {
 	
@@ -19,7 +18,7 @@ public class SubListEditor extends WWidget {
 	protected WPushButton newButton;
 	protected WPushButton duplicateButton;
 	protected WPushButton deleteButton;
-	protected WDropDownMenu<String> dropMenu;
+	protected WDropDownMenu<JsonElement> dropMenu;
 	
 	protected WListView<JsonObject> listView;
 	protected JsonArray array;
@@ -41,15 +40,10 @@ public class SubListEditor extends WWidget {
 		this.deleteButton = new WPushButton(this, "Delete");
 		this.deleteButton.setOnClickAction(this::deleteSelected);
 		this.dropMenu = new WDropDownMenu<>(this);
-		if (ConfiguratorGUI.manifestJSON.has("events")) {
-			if (ConfiguratorGUI.manifestJSON.getJSONObject("events").has(this.type)) {
-				Iterator<String> keys = ConfiguratorGUI.manifestJSON.getJSONObject("events").getJSONObject(this.type).keys();
-				while(keys.hasNext()) {
-					String key = keys.next();
-					this.dropMenu.add(new WListElement<>(key,key));
-				}
-			}
-		}
+		JsonObject events = ParsingUtils.getAsObject(ConfiguratorGUI.manifestJSON,"events",true);
+		if(Objects.nonNull(events))
+			for(Map.Entry<String, JsonElement> entry : events.entrySet())
+				this.dropMenu.add(new WListElement<>(entry.getKey(),entry.getValue()));
 	}
 	
 	@Override
@@ -83,16 +77,16 @@ public class SubListEditor extends WWidget {
 	public void newElement(int mouseButton) {
 		if(Objects.isNull(this.array)) return;
 		JsonObject newJSON = new JsonObject();
-		newJSON.put("type",this.dropMenu.getSelected().item);
-		this.array.put(newJSON);
+		newJSON.add("type",this.dropMenu.getSelected().item);
+		this.array.add(newJSON);
 		this.listView.add(new WListElement<>(this.dropMenu.getSelected().text,newJSON));
 	}
 	
 	public void duplicateElement(int mouseButton) {
 		if(Objects.isNull(this.selected)) return;
 		JsonObject newJSON = copyJSONObject(this.selected.item);
-		this.array.put(newJSON);
-		WListElement<JsonObject> newElement = new WListElement<>(newJSON.getString("type"), newJSON);
+		this.array.add(newJSON);
+		WListElement<JsonObject> newElement = new WListElement<>(ParsingUtils.getAsString(newJSON,"type",true),newJSON);
 		this.listView.add(newElement);
 	}
 	
@@ -118,8 +112,11 @@ public class SubListEditor extends WWidget {
 	public void populate(JsonArray array) {
 		this.array = array;
 		this.listView.clear();
-		for(int i = 0; i < array.length(); i++)
-			if(array.getJSONObject(i).has("type"))
-				this.listView.add(new WListElement<>(array.getJSONObject(i).getString("type"),array.getJSONObject(i)));
+		for(JsonElement element : array) {
+			String type = ParsingUtils.getAsString(element,"type",true);
+			if(Objects.nonNull(type)) {
+				this.listView.add(new WListElement<>(type,ParsingUtils.getAsObject(element)));
+			}
+		}
 	}
 }

@@ -1,6 +1,6 @@
-package com.daedalus.ambientevents.gui.widgets;
+package com.daedalus.ambientevents.client.gui.widgets;
 
-import com.daedalus.ambientevents.gui.Palette;
+import com.daedalus.ambientevents.client.gui.Palette;
 
 import java.util.Iterator;
 import java.util.List;

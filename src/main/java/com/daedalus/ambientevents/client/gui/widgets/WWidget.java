@@ -1,4 +1,4 @@
-package com.daedalus.ambientevents.gui.widgets;
+package com.daedalus.ambientevents.client.gui.widgets;
 
 import java.util.*;
 
@@ -6,7 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import com.daedalus.ambientevents.gui.Palette;
+import com.daedalus.ambientevents.client.gui.Palette;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;

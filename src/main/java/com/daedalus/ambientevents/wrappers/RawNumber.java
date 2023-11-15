@@ -1,17 +1,30 @@
 package com.daedalus.ambientevents.wrappers;
 
+import com.daedalus.ambientevents.ParsingUtils;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+
+import java.util.Objects;
 import java.util.Random;
 
 public class RawNumber implements INumber {
 
-	protected double value;
+	protected Number value;
 
-	public RawNumber(double valueIn) {
-		this.value = valueIn;
+	public RawNumber() {}
+
+	public RawNumber(Number value) {
+		this.value = value;
 	}
 
 	@Override
-	public double getValue(Random rand) {
+	public boolean parse(JsonElement json) throws JsonIOException {
+		this.value = ParsingUtils.getAsNumber(json,true);
+		return Objects.nonNull(this.value);
+	}
+
+	@Override
+	public Number getValue(Random rand) {
 		return this.value;
 	}
 }

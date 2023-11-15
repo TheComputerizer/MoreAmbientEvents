@@ -3,6 +3,7 @@ package com.daedalus.ambientevents.client;
 import com.daedalus.ambientevents.AmbientEvents;
 import com.daedalus.ambientevents.AmbientEventsRef;
 import com.daedalus.ambientevents.GenericEvent;
+import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.*;
 import mods.thecomputerizer.theimpossiblelibrary.util.file.FileUtil;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,7 @@ public class AmbientEventsClient {
     private final static ResourceLocation MANIFEST_LOCATION = AmbientEvents.getResource("manifest.json");
     private static final MutableInt TICK_TIMER = new MutableInt();
     private static File configDir;
+    public static JsonObject parsedConfig;
     private static boolean active = false;
     private static boolean configGood = false;
     private static int maxTick = 20;
@@ -52,28 +54,21 @@ public class AmbientEventsClient {
         File jsonFile = FileUtil.generateNestedFile(new File(configDir,AmbientEventsRef.NAME+"/events.json"),false);
         if(jsonFile.exists()) {
             try {
-                FileReader reader = new FileReader(jsonFile);
-                try {
-                    JsonObject fileJson = GSON.fromJson(reader,JsonObject.class);
-                    JsonArray events = fileJson.getAsJsonArray("events");
-                    for(JsonElement event : events) {
-                        EVENTS.add(new GenericEvent((JsonObject)event));
+                final FileReader reader = new FileReader(jsonFile);
+                ParsingUtils.tryCloseable(reader,c -> {
+                    parsedConfig = GSON.fromJson(reader,JsonObject.class);
+                    JsonArray eventElements = parsedConfig.getAsJsonArray("events");
+                    for(JsonElement element : eventElements) {
+                        GenericEvent event = ParsingUtils.parseElement(element,GenericEvent::new);
+                        if(Objects.nonNull(event)) EVENTS.add(event);
                     }
-                } catch(JsonIOException ex) {
-                    AmbientEventsRef.LOGGER.error("Could not parse JSON from file {}!",jsonFile,ex);
-                } finally {
-                    try {
-                        reader.close();
-                    } catch(IOException ex) {
-                        AmbientEventsRef.LOGGER.fatal("Could not close JSON reader for file {}! Things may leak!",jsonFile,ex);
-                    }
-                }
+                },ex -> AmbientEventsRef.LOGGER.error("Could not parse JSON from file {}!",jsonFile,ex));
             } catch (FileNotFoundException ex) {
                 AmbientEventsRef.LOGGER.error("Could not read JSON from file {}!",jsonFile,ex);
             }
         }
         if(EVENTS.size()>maxTick) maxTick = EVENTS.size();
-        configGood = true;
+        configGood = !EVENTS.isEmpty();
     }
 
     public static JsonObject readManifest(IResourceManager manager) {
@@ -91,6 +86,7 @@ public class AmbientEventsClient {
                 }
             }
         }
+        return null;
     }
 
     @SubscribeEvent

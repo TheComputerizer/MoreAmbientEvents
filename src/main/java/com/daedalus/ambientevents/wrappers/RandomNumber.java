@@ -1,29 +1,43 @@
 package com.daedalus.ambientevents.wrappers;
 
+import com.daedalus.ambientevents.AmbientEventsRef;
+import com.daedalus.ambientevents.ParsingUtils;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class RandomNumber implements INumber {
 
-	private double upperBound = 0;
-	private double lowerBound = 0;
+	protected INumber max;
+	protected INumber min;
 
-	public RandomNumber(JsonObject args) throws JsonIOException {
-		if(args.has("upperbound")) this.upperBound = args.get("upperbound").getAsDouble();
-		if(args.has("lowerbound")) this.lowerBound = args.get("lowerbound").getAsDouble();
-		if(this.upperBound==this.lowerBound) throw new JsonIOException("Invalid bounds for random number");
-	}
-
-	public RandomNumber(double lowerIn, double upperIn) {
-		this.lowerBound = lowerIn;
-		this.upperBound = upperIn;
+	@Override
+	public boolean parse(JsonElement json) throws JsonIOException {
+		this.max = NumberType.tryAutoParse(ParsingUtils.getNextElement(json,"max",true));
+		if(Objects.nonNull(this.max)) {
+			this.min = NumberType.tryAutoParse(ParsingUtils.getNextElement(json,"min",true));
+			if(Objects.isNull(this.min)) this.min = new RawNumber(0d);
+			Random rand = new Random();
+			Number maxVal = this.max.getValue(rand);
+			Number minVal = this.min.getValue(rand);
+			int compare = ParsingUtils.compareGeneric(maxVal,minVal);
+			if(compare<=0) {
+				AmbientEventsRef.LOGGER.error("Random number maximum of {} is not allowed to be less than or "+
+						"equal to minimum {}!",maxVal,minVal);
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
-	public double getValue(Random rand) {
-		return rand.nextDouble()*(this.upperBound-this.lowerBound)+this.lowerBound;
+	public Number getValue(Random rand) {
+		double upperBound = this.max.getValue(rand).doubleValue();
+		double lowerBound = this.min.getValue(rand).doubleValue();
+		return rand.nextDouble()*(upperBound-lowerBound)+lowerBound;
 	}
 
 }

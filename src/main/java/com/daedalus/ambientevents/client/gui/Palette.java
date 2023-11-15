@@ -1,4 +1,4 @@
-package com.daedalus.ambientevents.gui;
+package com.daedalus.ambientevents.client.gui;
 
 public class Palette {
 

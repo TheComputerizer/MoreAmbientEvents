@@ -1,9 +1,9 @@
-package com.daedalus.ambientevents.gui;
+package com.daedalus.ambientevents.client.gui;
 
 import com.daedalus.ambientevents.client.AmbientEventsClient;
-import com.daedalus.ambientevents.gui.widgets.WPushButton;
-import com.daedalus.ambientevents.gui.widgets.WVanillaTextField;
-import com.daedalus.ambientevents.gui.widgets.WWidget;
+import com.daedalus.ambientevents.client.gui.widgets.WPushButton;
+import com.daedalus.ambientevents.client.gui.widgets.WVanillaTextField;
+import com.daedalus.ambientevents.client.gui.widgets.WWidget;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 

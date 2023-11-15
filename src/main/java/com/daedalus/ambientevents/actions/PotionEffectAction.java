@@ -1,8 +1,6 @@
 package com.daedalus.ambientevents.actions;
 
-import com.daedalus.ambientevents.wrappers.INumber;
-import com.daedalus.ambientevents.wrappers.IString;
-import com.daedalus.ambientevents.wrappers.Wrapper;
+import com.daedalus.ambientevents.wrappers.*;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,21 +18,19 @@ public class PotionEffectAction extends CommonAction {
 	protected INumber duration;
 	protected INumber amplifier;
 
-	public PotionEffectAction(JsonObject args) throws JsonIOException {
-		super(args);
-		if(args.has("effect")) this.effect = Wrapper.newString(args.get("effect"));
-		else throw new JsonIOException("No potion ID given");
-		if(args.has("duration")) this.duration = Wrapper.newNumber(args.get("duration"));
-		else throw new JsonIOException("No potion duration given");
-		if(args.has("amplifier")) this.amplifier = Wrapper.newNumber(args.get("amplifier"));
-		else this.amplifier = Wrapper.newNumber(0);
+	public PotionEffectAction(JsonObject json) throws JsonIOException {
+		super(json);
+		this.effect = StringType.tryAutoParse(json,"effect",true);
+		this.duration = NumberType.tryAutoParse(json,"duration",true);
+		this.amplifier = NumberType.tryAutoParse(json,"amplifier",false);
+		if(Objects.isNull(this.amplifier)) this.amplifier = new RawNumber(0d);
 	}
 
 	@Override
 	public void execute(EntityPlayer player) {
 		Random rand = player.world.rand;
-		if(this.chance.getValue(rand)>=1) return;
-		ResourceLocation potionRes = new ResourceLocation(this.effect.getValue());
+		if(this.chance.getValue(rand).doubleValue()>=1d) return;
+		ResourceLocation potionRes = new ResourceLocation(this.effect.getValue(rand));
 		Potion potion = ForgeRegistries.POTIONS.containsKey(potionRes) ? ForgeRegistries.POTIONS.getValue(potionRes) : null;
 		if(Objects.nonNull(potion))
 			player.addPotionEffect(new PotionEffect(potion,(int)this.duration.getValue(rand),(int)this.amplifier.getValue(rand)));

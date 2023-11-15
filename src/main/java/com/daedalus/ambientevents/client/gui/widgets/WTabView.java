@@ -1,4 +1,4 @@
-package com.daedalus.ambientevents.gui.widgets;
+package com.daedalus.ambientevents.client.gui.widgets;
 
 import java.util.ArrayList;
 import java.util.List;

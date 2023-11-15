@@ -1,8 +1,8 @@
 package com.daedalus.ambientevents.conditions;
 
 import com.daedalus.ambientevents.wrappers.INumber;
-import com.daedalus.ambientevents.wrappers.Wrapper;
 
+import com.daedalus.ambientevents.wrappers.NumberType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,14 +13,13 @@ public class ChanceCondition implements ICondition {
 
 	protected INumber chance;
 
-	public ChanceCondition(JsonObject args) throws JsonIOException {
-		if(args.has("chance")) this.chance = Wrapper.newNumber(args.get("chance"));
-		else throw new JsonIOException("No chance specified");
+	public ChanceCondition(JsonObject json) throws JsonIOException {
+		this.chance = NumberType.tryAutoParse(json,"chance",true);
 	}
 
 	@Override
 	public boolean isMet(EntityPlayer player) {
 		Random rand = player.world.rand;
-        return rand.nextDouble()*this.chance.getValue(rand)<1;
+        return rand.nextDouble()*this.chance.getValue(rand).doubleValue()<1d;
     }
 }

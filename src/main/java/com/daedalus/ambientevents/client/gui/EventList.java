@@ -1,13 +1,13 @@
-package com.daedalus.ambientevents.gui;
+package com.daedalus.ambientevents.client.gui;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
-import com.daedalus.ambientevents.gui.widgets.*;
+import com.daedalus.ambientevents.ParsingUtils;
+import com.daedalus.ambientevents.client.gui.widgets.*;
 import com.daedalus.ambientevents.wrappers.JSONKeyValuePair;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class EventList extends WWidget {
@@ -38,10 +38,9 @@ public class EventList extends WWidget {
 		this.duplicateButton.setOnClickAction(this::duplicateEvent);
 		this.deleteButton = new WPushButton(this, "Delete");
 		this.deleteButton.setOnClickAction(this::deleteSelected);
-		Iterator<String> events = ConfiguratorGUI.eventsJSON.keys();
-		while(events.hasNext()) {
-			String eventName = events.next();
-			this.listView.add(new WListElement<>(eventName,new JSONKeyValuePair(eventName,ConfiguratorGUI.eventsJSON.getJSONObject(eventName))));
+		for(Map.Entry<String,JsonElement> entry : ConfiguratorGUI.eventsJSON.entrySet()) {
+			JSONKeyValuePair pair = new JSONKeyValuePair(entry.getKey(),ParsingUtils.getAsObject(entry.getValue()));
+			this.listView.add(new WListElement<>(entry.getKey(),pair));
 		}
 	}
 	
@@ -71,26 +70,23 @@ public class EventList extends WWidget {
 	
 	public void newEvent(int mouseButton) {
 		String newName = String.format("UnnamedEvent%d", eventCounter++);
-		ArrayList<JSONKeyValuePair> pairs = new ArrayList<JSONKeyValuePair> ();
-		Iterator<String> keys = ConfiguratorGUI.manifestJSON.getJSONObject("events").keys();
-		while (keys.hasNext()) {
-			String keyName = keys.next();
-			pairs.add(new JSONKeyValuePair(keyName, new JsonArray()));
-		}
+		List<JSONKeyValuePair> pairs = new ArrayList<>();
+		JsonObject events = ParsingUtils.getAsObject(ConfiguratorGUI.manifestJSON,"events",true);
+		if(Objects.nonNull(events))
+			for(Map.Entry<String,JsonElement> entry : events.entrySet())
+				pairs.add(new JSONKeyValuePair(entry.getKey(),new JsonArray()));
 		JsonObject newEvent = new JsonObject();
-		for (int i = 0; i < pairs.size(); i++) {
-			newEvent.put(pairs.get(i).getKey(), pairs.get(i).getJSONArray());
-		}
-		ConfiguratorGUI.eventsJSON.put(newName, newEvent);
-		this.listView.add(new WListElement<> (newName, new JSONKeyValuePair(newName, newEvent)));
+        for(JSONKeyValuePair pair : pairs) newEvent.add(pair.getKey(),pair.getJSONArray());
+		ConfiguratorGUI.eventsJSON.add(newName,newEvent);
+		this.listView.add(new WListElement<>(newName,new JSONKeyValuePair(newName,newEvent)));
 	}
 	
 	public void duplicateEvent(int mouseButton) {
 		if(Objects.isNull(this.selected)) return;
 		String newName = String.format(this.selected.text + "%d", eventCounter++);
 		JSONKeyValuePair newPair = new JSONKeyValuePair(newName, copyJSONObject(this.selected.item.getJSONObject()));
-		WListElement<JSONKeyValuePair> newElement = new WListElement<JSONKeyValuePair> (newName, newPair);
-		ConfiguratorGUI.eventsJSON.put(newName, newElement.item.getJSONObject());
+		WListElement<JSONKeyValuePair> newElement = new WListElement<>(newName, newPair);
+		ConfiguratorGUI.eventsJSON.add(newName,newElement.item.getJSONObject());
 		this.listView.add(newElement);
 	}
 	
@@ -111,18 +107,17 @@ public class EventList extends WWidget {
 		this.listView.remove(this.selected);
 		this.selected.item.setKey(newName);
 		WListElement<JSONKeyValuePair> newElement = new WListElement<>(newName,this.selected.item);
-		ConfiguratorGUI.eventsJSON.put(newName,newElement.item.getJSONObject());
+		ConfiguratorGUI.eventsJSON.add(newName,newElement.item.getJSONObject());
 		this.listView.add(newElement,index);
 		this.selected = newElement;
 	}
 	
 	public void rePopulate() {
 		int index = this.listView.getIndex(this.selected);
-		Iterator<String> events = ConfiguratorGUI.eventsJSON.keys();
 		this.listView.clear();
-		while(events.hasNext()) {
-			String eventName = events.next();
-			this.listView.add(new WListElement<>(eventName,new JSONKeyValuePair(eventName,ConfiguratorGUI.eventsJSON.getJSONObject(eventName))));
+		for(Map.Entry<String,JsonElement> entry : ConfiguratorGUI.eventsJSON.entrySet()) {
+			JSONKeyValuePair pair = new JSONKeyValuePair(entry.getKey(),ParsingUtils.getAsObject(entry.getValue()));
+			this.listView.add(new WListElement<>(entry.getKey(),pair));
 		}
 		this.listView.select(index);
 	}
