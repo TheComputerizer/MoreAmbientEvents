@@ -4,6 +4,8 @@ import com.daedalus.ambientevents.AmbientEventsRef;
 import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
+import io.netty.buffer.ByteBuf;
+import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 
 import java.util.Objects;
 import java.util.Random;
@@ -12,6 +14,13 @@ public class RandomNumber implements INumber {
 
 	protected INumber max;
 	protected INumber min;
+
+	public RandomNumber() {}
+
+	public RandomNumber(ByteBuf buf) {
+		this.max = NumberType.sync(buf);
+		this.min = NumberType.sync(buf);
+	}
 
 	@Override
 	public boolean parse(JsonElement json) throws JsonIOException {
@@ -40,4 +49,10 @@ public class RandomNumber implements INumber {
 		return rand.nextDouble()*(upperBound-lowerBound)+lowerBound;
 	}
 
+	@Override
+	public void sync(ByteBuf buf) {
+		NetworkUtil.writeString(buf,"random");
+		this.max.sync(buf);
+		this.min.sync(buf);
+	}
 }

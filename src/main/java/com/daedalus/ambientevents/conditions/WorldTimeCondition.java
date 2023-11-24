@@ -7,6 +7,7 @@ import com.daedalus.ambientevents.wrappers.NumberType;
 import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.util.Random;
@@ -21,6 +22,11 @@ public class WorldTimeCondition implements ICondition {
 		this.checkValue = NumberType.tryAutoParse(json,"value",true);
 	}
 
+	public WorldTimeCondition(ByteBuf buf) {
+		this.comparison = new NumericComparison(buf);
+		this.checkValue = NumberType.sync(buf);
+	}
+
 	@Override
 	public boolean isMet(EntityPlayer player) {
 		Random rand = player.world.rand;
@@ -28,4 +34,10 @@ public class WorldTimeCondition implements ICondition {
 				this.checkValue.getValue(rand).doubleValue()*24000);
     }
 
+
+	@Override
+	public void sync(ByteBuf buf) {
+		this.comparison.sync(buf);
+		this.checkValue.sync(buf);
+	}
 }

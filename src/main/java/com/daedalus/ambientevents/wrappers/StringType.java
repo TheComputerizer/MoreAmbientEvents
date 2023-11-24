@@ -3,6 +3,8 @@ package com.daedalus.ambientevents.wrappers;
 import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
+import io.netty.buffer.ByteBuf;
+import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +35,15 @@ public enum StringType {
 
     public static IString tryAutoParse(@Nonnull JsonElement json, String key, boolean shouldThrow) throws JsonIOException {
         return tryAutoParse(ParsingUtils.getNextElement(json,key,shouldThrow));
+    }
+
+    public static IString sync(ByteBuf buf) {
+        StringType type = getOrRaw(NetworkUtil.readString(buf));
+        switch(type) {
+            case RANDOM: return new RandomStringList(buf);
+            case SEQUENTIAL: return new SequentialStringList(buf);
+            default: return new RawString(buf);
+        }
     }
 
     private final String name;

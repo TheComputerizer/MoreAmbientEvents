@@ -6,6 +6,7 @@ import com.daedalus.ambientevents.wrappers.NumberType;
 import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -24,6 +25,12 @@ public class LightningAction extends CommonAction {
 		super(json);
 		this.target = StringType.tryAutoParse(json,"player",true);
 		this.radius = NumberType.tryAutoParse(json,"radius",true);
+	}
+
+	public LightningAction(ByteBuf buf) {
+		super(buf);
+		this.target = StringType.sync(buf);
+		this.radius = NumberType.sync(buf);
 	}
 
 	@Override
@@ -49,5 +56,12 @@ public class LightningAction extends CommonAction {
 			}
 			player.world.addWeatherEffect(new EntityLightningBolt(player.world,this.x,this.y,this.z,false));
 		}
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		super.sync(buf);
+		this.target.sync(buf);
+		this.radius.sync(buf);
 	}
 }

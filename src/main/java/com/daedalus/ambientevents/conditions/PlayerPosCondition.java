@@ -7,6 +7,7 @@ import com.daedalus.ambientevents.wrappers.NumberType;
 import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.util.Random;
@@ -21,6 +22,12 @@ public class PlayerPosCondition implements ICondition {
 		this.pos = StringType.tryAutoParse(json,"pos",true);
 		this.comparison = new NumericComparison(StringType.tryAutoParse(json,"comparison",true));
 		this.compareValue = NumberType.tryAutoParse(json,"compareValue",true);
+	}
+
+	public PlayerPosCondition(ByteBuf buf) {
+		this.pos = StringType.sync(buf);
+		this.comparison = new NumericComparison(buf);
+		this.compareValue = NumberType.sync(buf);
 	}
 
 	@Override
@@ -40,5 +47,12 @@ public class PlayerPosCondition implements ICondition {
 		default: return false;
 		}
 		return this.comparison.compare(rand,playerValue,this.compareValue.getValue(rand).doubleValue());
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		this.pos.sync(buf);
+		this.comparison.sync(buf);
+		this.compareValue.sync(buf);
 	}
 }

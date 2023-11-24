@@ -4,6 +4,7 @@ import com.daedalus.ambientevents.wrappers.IString;
 import com.daedalus.ambientevents.wrappers.StringType;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentString;
 
@@ -19,8 +20,19 @@ public class ChatAction extends CommonAction {
 		if(Objects.isNull(this.message)) throw new JsonIOException("Unable to parse message for chat action");
 	}
 
+	public ChatAction(ByteBuf buf) {
+		super(buf);
+		this.message = StringType.sync(buf);
+	}
+
 	@Override
 	public void execute(EntityPlayer player) {
 		player.sendMessage(new TextComponentString(this.message.getValue(player.world.rand)));
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		super.sync(buf);
+		this.message.sync(buf);
 	}
 }

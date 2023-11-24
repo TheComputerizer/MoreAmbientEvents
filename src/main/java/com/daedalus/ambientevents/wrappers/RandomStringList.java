@@ -4,6 +4,8 @@ import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
+import io.netty.buffer.ByteBuf;
+import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 import net.minecraft.util.WeightedRandom;
 
 import java.util.ArrayList;
@@ -17,6 +19,10 @@ public class RandomStringList implements IString {
 
 	public RandomStringList() {
 		this.values = new ArrayList<>();
+	}
+
+	public RandomStringList(ByteBuf buf) {
+		this.values = NetworkUtil.readGenericList(buf,buf1 -> new WeightedValue<>(StringType.sync(buf1),buf1.readInt()));
 	}
 
 	@Override
@@ -36,5 +42,14 @@ public class RandomStringList implements IString {
 	@Override
 	public String getValue(Random rand) {
 		return WeightedRandom.getRandomItem(rand,this.values).getValue().getValue(rand);
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		NetworkUtil.writeString(buf,"random");
+		NetworkUtil.writeGenericList(buf,this.values,(buf1,val) -> {
+			val.getValue().sync(buf1);
+			buf1.writeInt(val.itemWeight);
+		});
 	}
 }

@@ -5,7 +5,6 @@ import com.daedalus.ambientevents.AmbientEventsRef;
 import com.daedalus.ambientevents.GenericEvent;
 import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.*;
-import mods.thecomputerizer.theimpossiblelibrary.util.file.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
@@ -20,10 +19,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,31 +29,20 @@ import java.util.Objects;
 public class AmbientEventsClient {
 
     private static final List<GenericEvent> EVENTS = new ArrayList<>();
-    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setLenient().setPrettyPrinting().create();
     private final static ResourceLocation MANIFEST_LOCATION = AmbientEvents.getResource("manifest.json");
     private static final MutableInt TICK_TIMER = new MutableInt();
-    private static File configDir;
     public static JsonObject parsedConfig;
     private static boolean active = false;
     private static boolean configGood = false;
     private static int maxTick = 20;
     public static long lastSleep = 0;
-
-    public static void setConfigDir(File dir) {
-        configDir = dir;
-    }
-
     public static void init() {
-        if(Objects.isNull(configDir)) {
-            AmbientEventsRef.LOGGER.fatal("Could not locate config directory?");
-            return;
-        }
-        File jsonFile = FileUtil.generateNestedFile(new File(configDir,AmbientEventsRef.NAME+"/events.json"),false);
+        File jsonFile = AmbientEvents.getConfigFile("events.json",false);
         if(jsonFile.exists()) {
             try {
                 final FileReader reader = new FileReader(jsonFile);
                 ParsingUtils.tryCloseable(reader,c -> {
-                    parsedConfig = GSON.fromJson(reader,JsonObject.class);
+                    parsedConfig = AmbientEventsRef.GSON.fromJson(reader,JsonObject.class);
                     JsonArray eventElements = parsedConfig.getAsJsonArray("events");
                     for(JsonElement element : eventElements) {
                         GenericEvent event = ParsingUtils.parseElement(element,GenericEvent::new);
@@ -75,6 +61,9 @@ public class AmbientEventsClient {
         IResource resource = null;
         try {
             resource = manager.getResource(MANIFEST_LOCATION);
+            return ParsingUtils.returnCloseable(new InputStreamReader(resource.getInputStream(),StandardCharsets.UTF_8),
+                    c -> ParsingUtils.getAsObject(AmbientEventsRef.GSON.fromJson((InputStreamReader)c,JsonElement.class)),
+                    ex -> AmbientEventsRef.LOGGER.error("Could not parse manifest JSON from resource!",ex));
         } catch (IOException ex) {
             AmbientEventsRef.LOGGER.error("Error getting manifest file!",ex);
         } finally {

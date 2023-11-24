@@ -3,6 +3,8 @@ package com.daedalus.ambientevents.wrappers;
 import com.daedalus.ambientevents.ParsingUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
+import io.netty.buffer.ByteBuf;
+import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +37,17 @@ public enum NumberType {
 
     public static INumber tryAutoParse(@Nonnull JsonElement json, String key, boolean shouldThrow) throws JsonIOException {
         return tryAutoParse(ParsingUtils.getNextElement(json,key,shouldThrow));
+    }
+
+    public static INumber sync(ByteBuf buf) {
+        NumberType type = getOrRaw(NetworkUtil.readString(buf));
+        switch(type) {
+            case MAP: return new MapNumber(buf);
+            case RANDOM: return new RandomNumber(buf);
+            case RANDOM_LIST: return new RandomNumberList(buf);
+            case SEQUENTIAL: return new SequentialNumberList(buf);
+            default: return new RawNumber(buf);
+        }
     }
 
     private final String name;

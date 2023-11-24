@@ -14,7 +14,8 @@ import java.util.function.Function;
 @SuppressWarnings({"DataFlowIssue", "unused"})
 public class ParsingUtils {
 
-    public static void tryCloseable(Closeable closeable, Consumer<Closeable> tryThis, @Nullable Consumer<Exception> onCatch) {
+    public static void tryCloseable(Closeable closeable, Consumer<Closeable> tryThis,
+                                    @Nullable Consumer<Exception> onCatch) {
         try {
             tryThis.accept(closeable);
         } catch(Exception ex) {
@@ -26,6 +27,22 @@ public class ParsingUtils {
                 AmbientEventsRef.LOGGER.error("Failed to close resource or stream! Things may leak!",ex);
             }
         }
+    }
+
+    public static <E> @Nullable E returnCloseable(Closeable closeable, Function<Closeable,E> returnThis,
+                                                  @Nullable Consumer<Exception> onCatch) {
+        try {
+            return returnThis.apply(closeable);
+        } catch(Exception ex) {
+            if(Objects.nonNull(onCatch)) onCatch.accept(ex);
+        } finally {
+            try {
+                closeable.close();
+            } catch(IOException ex) {
+                AmbientEventsRef.LOGGER.error("Failed to close resource or stream! Things may leak!",ex);
+            }
+        }
+        return null;
     }
 
     public static <J> @Nullable J parseElement(JsonElement json, Function<JsonElement,J> parser) {

@@ -5,6 +5,7 @@ import com.daedalus.ambientevents.client.AmbientEventsClient;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonPrimitive;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Tuple;
@@ -18,6 +19,15 @@ public class MapNumber implements INumber {
 	protected Tuple<INumber,INumber> highPair;
 	protected boolean shouldClamp;
 	protected IString inputType;
+
+	public MapNumber() {}
+
+	public MapNumber(ByteBuf buf) {
+		this.lowPair = new Tuple<>(NumberType.sync(buf),NumberType.sync(buf));
+		this.highPair = new Tuple<>(NumberType.sync(buf),NumberType.sync(buf));
+		this.shouldClamp = buf.readBoolean();
+		this.inputType = StringType.sync(buf);
+	}
 
 	@Override
 	public boolean parse(JsonElement json) throws JsonIOException {
@@ -67,5 +77,18 @@ public class MapNumber implements INumber {
 			else if(value>highOut) value = highOut;
 		}
 		return value;
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		syncTuple(buf,this.lowPair);
+		syncTuple(buf,this.highPair);
+		buf.writeBoolean(this.shouldClamp);
+		this.inputType.sync(buf);
+	}
+
+	private void syncTuple(ByteBuf buf, Tuple<INumber,INumber> tuple) {
+		tuple.getFirst().sync(buf);
+		tuple.getSecond().sync(buf);
 	}
 }

@@ -3,6 +3,7 @@ package com.daedalus.ambientevents.actions;
 import com.daedalus.ambientevents.wrappers.*;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -39,6 +40,14 @@ public class PlaySoundAction extends CommonAction {
 		else throw new JsonIOException("Sound `"+soundString+"` is not recognized as a valid sound event!");
 	}
 
+	public PlaySoundAction(ByteBuf buf) {
+		super(buf);
+		this.sound = StringType.sync(buf);
+		this.category = StringType.sync(buf);
+		this.volume = NumberType.sync(buf);
+		this.pitch = NumberType.sync(buf);
+	}
+
 	@Override
 	public void execute(EntityPlayer player) {
 		Random rand = player.world.rand;
@@ -47,5 +56,14 @@ public class PlaySoundAction extends CommonAction {
 					SoundCategory.valueOf(this.category.getValue(rand).toUpperCase()),this.volume.getValue(rand).floatValue(),
 					this.pitch.getValue(rand).floatValue(),true);
 		}
+	}
+
+	@Override
+	public void sync(ByteBuf buf) {
+		super.sync(buf);
+		this.sound.sync(buf);
+		this.category.sync(buf);
+		this.volume.sync(buf);
+		this.pitch.sync(buf);
 	}
 }
