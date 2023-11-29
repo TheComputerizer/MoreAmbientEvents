@@ -21,7 +21,7 @@ java.toolchain.getLanguageVersion().set(JavaLanguageVersion.of(8))
 
 minecraft {
     mappings channel: 'stable', version: mappings_version
-    accessTransformer = file('src/main/resources/META-INF/soundevents_at.cfg')
+    //accessTransformer = file('src/main/resources/META-INF/soundevents_at.cfg')
     runs {
         def args = [
                 '-Dmixin.debug.export=true',
@@ -98,11 +98,13 @@ processResources {
 
 jar {
     manifest {
+        /*
         attributes([
                 'FMLCorePlugin': 'mods.thecomputerizer.dimhoppertweaks.core.EarlyMixinPlugin',
                 'FMLCorePluginContainsFMLMod': true,
                 'ForceLoadAsMod': true,
-                'FMLAT': 'soundevents_at.cfg',
+                'FMLAT': 'soundevents_at.cfg'
         ])
+         */
     }
 }

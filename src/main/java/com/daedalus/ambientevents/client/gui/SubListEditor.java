@@ -1,8 +1,8 @@
 package com.daedalus.ambientevents.client.gui;
 
-import com.daedalus.ambientevents.ParsingUtils;
+import com.daedalus.ambientevents.parsing.ParsingUtils;
 import com.daedalus.ambientevents.client.gui.widgets.*;
-import com.daedalus.ambientevents.wrappers.JSONKeyValuePair;
+import com.daedalus.ambientevents.parsing.JSONKeyValuePair;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

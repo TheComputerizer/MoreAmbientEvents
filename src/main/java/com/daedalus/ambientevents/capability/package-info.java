@@ -1,0 +1,4 @@
+@ParametersAreNonnullByDefault
+package com.daedalus.ambientevents.capability;
+
+import javax.annotation.ParametersAreNonnullByDefault;

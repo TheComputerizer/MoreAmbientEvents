@@ -1,6 +1,6 @@
 package com.daedalus.ambientevents.client.gui;
 
-import com.daedalus.ambientevents.client.AmbientEventsClient;
+import com.daedalus.ambientevents.client.ClientEventManager;
 import com.daedalus.ambientevents.client.gui.widgets.WPushButton;
 import com.daedalus.ambientevents.client.gui.widgets.WVanillaTextField;
 import com.daedalus.ambientevents.client.gui.widgets.WWidget;
@@ -24,7 +24,7 @@ public class ConfiguratorGUI extends WWidget {
 
 	public ConfiguratorGUI(Minecraft mc) {
 		super(null);
-		manifestJSON = AmbientEventsClient.readManifest(mc.getResourceManager());
+		manifestJSON = ClientEventManager.readManifest(mc.getResourceManager());
 		if(Objects.isNull(manifestJSON)) manifestJSON = new JsonObject();
 	}
 
