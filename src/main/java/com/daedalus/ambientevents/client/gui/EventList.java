@@ -38,9 +38,11 @@ public class EventList extends WWidget {
 		this.duplicateButton.setOnClickAction(this::duplicateEvent);
 		this.deleteButton = new WPushButton(this, "Delete");
 		this.deleteButton.setOnClickAction(this::deleteSelected);
-		for(Map.Entry<String,JsonElement> entry : ConfiguratorGUI.eventsJSON.entrySet()) {
-			JSONKeyValuePair pair = new JSONKeyValuePair(entry.getKey(),ParsingUtils.getAsObject(entry.getValue()));
-			this.listView.add(new WListElement<>(entry.getKey(),pair));
+		if(Objects.nonNull(ConfiguratorGUI.eventsJSON)) {
+			for(Map.Entry<String,JsonElement> entry : ConfiguratorGUI.eventsJSON.entrySet()) {
+				JSONKeyValuePair pair = new JSONKeyValuePair(entry.getKey(),ParsingUtils.getAsObject(entry.getValue()));
+				this.listView.add(new WListElement<>(entry.getKey(),pair));
+			}
 		}
 	}
 	

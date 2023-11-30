@@ -18,30 +18,43 @@ import java.util.Objects;
 
 public class MasterAction {
 
-	public static Action newAction(@Nullable JsonObject json) throws JsonIOException {
-		if(Objects.isNull(json)) throw new JsonIOException("Invalid action");
-		String actionType = ParsingUtils.getAsString(json,"type",true);
-		if(Objects.nonNull(actionType)) {
-			switch(actionType) {
-				case "lightning": return new LightningAction(json);
-				case "chat": return new ChatAction(json);
-				case "potioneffect": return new PotionEffectAction(json);
-				case "playsound": return new PlaySoundAction(json);
-				default: throw new JsonIOException("Unrecogized action type: "+actionType);
+	public static Action newAction(@Nullable JsonObject json) {
+		String actionType = "";
+		try {
+			if (Objects.isNull(json)) throw new JsonIOException("Invalid action");
+			actionType = ParsingUtils.getAsString(json, "type", true);
+			if (Objects.nonNull(actionType)) {
+				switch (actionType) {
+					case "chat": return new ChatAction(json);
+					case "command": return new CommandAction(json);
+					case "lightning": return new LightningAction(json);
+					case "playsound": return new PlaySoundAction(json);
+					case "potioneffect": return new PotionEffectAction(json);
+					default: throw new JsonIOException("Unrecogized action type: " + actionType);
+				}
 			}
+		} catch (JsonIOException ex) {
+			AmbientEvents.logError("Failed to parse action of type {}!",actionType,ex);
 		}
 		return null;
 	}
 
 	public static Action readAction(ByteBuf buf) {
-		String name = NetworkUtil.readString(buf);
-		switch(name) {
-			case "lightning": return new LightningAction(buf);
-			case "chat": return new ChatAction(buf);
-			case "potioneffect": return new PotionEffectAction(buf);
-			case "playsound": return new PlaySoundAction(buf);
-			default: throw new JsonIOException("Unrecogized action type: "+name);
+		String name = "";
+		try {
+			name = NetworkUtil.readString(buf);
+			switch(name) {
+				case "chat": return new ChatAction(buf);
+				case "command": return new CommandAction(buf);
+				case "lightning": return new LightningAction(buf);
+				case "playsound": return new PlaySoundAction(buf);
+				case "potioneffect": return new PotionEffectAction(buf);
+				default: throw new JsonIOException("Unrecogized action type: " + name);
+			}
+		} catch(JsonIOException ex) {
+			AmbientEvents.logError("Failed to parse action of type {}!",name,ex);
 		}
+		return null;
 	}
 
 	private final List<Action> actions;
@@ -56,7 +69,7 @@ public class MasterAction {
 				Action action = newAction(ParsingUtils.getAsObject(element));
 				if(Objects.nonNull(action) && checkSide(action)) this.actions.add(action);
 			}
-		}
+		} else AmbientEvents.logWarn("Event was parsed with no actions!");
 	}
 
 	public MasterAction(ByteBuf buf) {

@@ -4,6 +4,7 @@ import com.daedalus.ambientevents.AmbientEventsRef;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -14,6 +15,7 @@ import javax.annotation.Nonnull;
 
 @EventBusSubscriber(modid = AmbientEventsRef.MODID)
 public class RegistryHandler {
+
     public static final CreativeTabs AMBIENT_EVENTS_TAB = new CreativeTabs(AmbientEventsRef.MODID) {
         @SideOnly(Side.CLIENT)
         public @Nonnull ItemStack createIcon() {
@@ -24,5 +26,11 @@ public class RegistryHandler {
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         event.getRegistry().register(ItemRegistry.CONFIGURATOR);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent()
+    public static void onModelRegister(ModelRegistryEvent event) {
+        ItemRegistry.initItemModels();
     }
 }

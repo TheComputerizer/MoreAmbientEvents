@@ -59,7 +59,6 @@ public class ParsingUtils {
         if(Objects.isNull(json) || !json.has(key)) {
             String msg = "Unable to find key `"+key+"` in json object "+json;
             if(shouldThrow) throw new JsonIOException(msg);
-            AmbientEvents.logError(msg);
             return false;
         }
         return true;
@@ -70,7 +69,7 @@ public class ParsingUtils {
     }
 
     public static @Nullable JsonElement getNextElement(JsonElement json, String key, boolean shouldThrow) {
-        JsonObject asObj = getAsObject(json,key,shouldThrow);
+        JsonObject asObj = getAsObject(json,shouldThrow);
         return validateKey(asObj,key,shouldThrow) ? asObj.get(key) : null;
     }
 
@@ -81,10 +80,9 @@ public class ParsingUtils {
     public static @Nullable JsonObject getAsObject(JsonElement json, boolean shouldThrow) throws JsonIOException {
         try {
             return json.getAsJsonObject();
-        } catch(IllegalStateException ex) {
+        } catch(IllegalStateException | NullPointerException ex) {
             String msg = "Failed to get json element as object! "+json;
             if(shouldThrow) throw new JsonIOException(msg,ex);
-            AmbientEvents.logError(msg,ex);
             return null;
         }
     }
@@ -105,10 +103,9 @@ public class ParsingUtils {
     public static @Nullable JsonArray getAsArray(JsonElement json, boolean shouldThrow) throws JsonIOException {
         try {
             return json.getAsJsonArray();
-        } catch(IllegalStateException ex) {
+        } catch(IllegalStateException | NullPointerException ex) {
             String msg = "Failed to get json element as array! "+json;
             if(shouldThrow) throw new JsonIOException(msg,ex);
-            AmbientEvents.logError(msg,ex);
             return null;
         }
     }
@@ -129,10 +126,9 @@ public class ParsingUtils {
     public static @Nullable JsonPrimitive getAsPrimitive(JsonElement json, boolean shouldThrow) throws JsonIOException {
         try {
             return json.getAsJsonPrimitive();
-        } catch(IllegalStateException ex) {
+        } catch(IllegalStateException | NullPointerException ex) {
             String msg = "Failed to get json element as primitive! "+json;
             if(shouldThrow) throw new JsonIOException(msg,ex);
-            AmbientEvents.logError(msg,ex);
             return null;
         }
     }
@@ -157,11 +153,9 @@ public class ParsingUtils {
             JsonPrimitive primitive = getAsPrimitive(json);
             if(Objects.isNull(primitive)) {
                 if(shouldThrow) throw new JsonIOException(msg);
-                AmbientEvents.logError(msg);
             } else value = primitive.getAsString();
-        } catch(IllegalStateException ex) {
+        } catch(IllegalStateException | NullPointerException ex) {
             if(shouldThrow) throw new JsonIOException(msg,ex);
-            AmbientEvents.logError(msg,ex);
         }
         return validateString(value) ? value : null;
     }
@@ -186,11 +180,9 @@ public class ParsingUtils {
             JsonPrimitive primitive = getAsPrimitive(json);
             if(Objects.isNull(primitive)) {
                 if(shouldThrow) throw new JsonIOException(msg);
-                AmbientEvents.logError(msg);
             } else value = primitive.getAsNumber();
-        } catch(IllegalStateException ex) {
+        } catch(IllegalStateException | NullPointerException ex) {
             if(shouldThrow) throw new JsonIOException(msg,ex);
-            AmbientEvents.logError(msg,ex);
         }
         return value;
     }

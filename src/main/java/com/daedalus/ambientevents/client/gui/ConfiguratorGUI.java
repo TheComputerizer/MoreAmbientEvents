@@ -24,6 +24,7 @@ public class ConfiguratorGUI extends WWidget {
 
 	public ConfiguratorGUI(Minecraft mc) {
 		super(null);
+		eventsJSON = ClientEventManager.parsedConfig;
 		manifestJSON = ClientEventManager.readManifest(mc.getResourceManager());
 		if(Objects.isNull(manifestJSON)) manifestJSON = new JsonObject();
 	}

@@ -1,6 +1,7 @@
 package com.daedalus.ambientevents.parsing.actions;
 
 import com.daedalus.ambientevents.parsing.WrapperHolder;
+import com.daedalus.ambientevents.parsing.numbers.RawNumber;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
@@ -11,7 +12,7 @@ public abstract class Action extends WrapperHolder {
 
 	protected Action(JsonObject json) throws JsonIOException {
 		super();
-		addNumber(json,"chance");
+		addNumber(json,"chance",new RawNumber(1d));
 	}
 
 	protected Action(ByteBuf buf) {

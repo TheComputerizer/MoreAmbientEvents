@@ -29,26 +29,32 @@ public abstract class WrapperHolder {
         this.stringWrappers = NetworkUtil.readGenericMap(buf,NetworkUtil::readString,StringType::sync);
     }
 
-    protected INumber addNumber(JsonObject json, String key) throws JsonIOException {
-        return addNumber(json,key,null);
+    protected void addNumber(JsonObject json, String key) throws JsonIOException {
+        addNumber(json,key,null);
     }
 
-    protected INumber addNumber(JsonObject json, String key, @Nullable INumber fallback) throws JsonIOException {
-        INumber wrapper = NumberType.tryAutoParse(json,key,Objects.isNull(fallback));
-        wrapper = Objects.nonNull(wrapper) ? wrapper : fallback;
-        if(Objects.nonNull(wrapper)) this.numberWrappers.put(key,wrapper);
-        return wrapper;
+    protected void addNumber(JsonObject json, String key, @Nullable INumber fallback) throws JsonIOException {
+        try {
+            INumber wrapper = NumberType.tryAutoParse(json,key,Objects.isNull(fallback));
+            wrapper = Objects.nonNull(wrapper) ? wrapper : fallback;
+            if(Objects.nonNull(wrapper)) this.numberWrappers.put(key,wrapper);
+        } catch(JsonIOException ex) {
+            throw new JsonIOException("Failed to parse number for key "+key,ex);
+        }
     }
 
-    protected IString addString(JsonObject json, String key) throws JsonIOException {
-        return addString(json,key,null);
+    protected void addString(JsonObject json, String key) throws JsonIOException {
+        addString(json,key,null);
     }
 
-    protected IString addString(JsonObject json, String key, @Nullable IString fallback) throws JsonIOException {
-        IString wrapper = StringType.tryAutoParse(json,key,Objects.isNull(fallback));
-        wrapper = Objects.nonNull(wrapper) ? wrapper : fallback;
-        if(Objects.nonNull(wrapper)) this.stringWrappers.put(key,wrapper);
-        return wrapper;
+    protected void addString(JsonObject json, String key, @Nullable IString fallback) throws JsonIOException {
+        try {
+            IString wrapper = StringType.tryAutoParse(json, key, Objects.isNull(fallback));
+            wrapper = Objects.nonNull(wrapper) ? wrapper : fallback;
+            if (Objects.nonNull(wrapper)) this.stringWrappers.put(key, wrapper);
+        } catch (JsonIOException ex) {
+            throw new JsonIOException("Failed to parse string for key "+key,ex);
+        }
     }
 
     protected final Number getNum(EntityPlayer player, String id) {

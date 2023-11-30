@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,26 +36,30 @@ public class EventManager {
 
     private static final MutableInt TICK_TIMER = new MutableInt();
 
-    public static final List<GenericEvent> EVENTS = new ArrayList<>();
+    public static final List<GenericEvent> EVENTS = Collections.synchronizedList(new ArrayList<>());
 
     public static JsonObject parsedConfig;
 
-    public static void onServerStarting() {
-        EVENTS.clear();
-        File jsonFile = AmbientEvents.getConfigFile("events.json",false);
-        if(jsonFile.exists()) {
-            try {
-                final FileReader reader = new FileReader(jsonFile);
-                ParsingUtils.tryCloseable(reader, c -> {
-                    parsedConfig = AmbientEventsRef.GSON.fromJson(reader,JsonObject.class);
-                    JsonArray eventElements = parsedConfig.getAsJsonArray("events");
-                    for(JsonElement element : eventElements) {
-                        GenericEvent event = ParsingUtils.parseElement(element,GenericEvent::new);
-                        if(Objects.nonNull(event)) EVENTS.add(event);
-                    }
-                },ex -> AmbientEvents.logError("Could not parse JSON from file {}!",jsonFile,ex));
-            } catch (FileNotFoundException ex) {
-                AmbientEvents.logError("Could not read JSON from file {}!",jsonFile,ex);
+    public static void loadConfig() {
+        synchronized(EVENTS) {
+            EVENTS.clear();
+            File jsonFile = AmbientEvents.getConfigFile("events.json", false);
+            if (jsonFile.exists()) {
+                try {
+                    final FileReader reader = new FileReader(jsonFile);
+                    ParsingUtils.tryCloseable(reader, c -> {
+                        parsedConfig = AmbientEventsRef.GSON.fromJson(reader, JsonObject.class);
+                        JsonArray eventElements = ParsingUtils.getAsArray(parsedConfig, "events");
+                        if (Objects.nonNull(eventElements)) {
+                            for (JsonElement element : eventElements) {
+                                GenericEvent event = ParsingUtils.parseElement(element, GenericEvent::new);
+                                if (Objects.nonNull(event)) EVENTS.add(event);
+                            }
+                        }
+                    }, ex -> AmbientEvents.logError("Could not parse JSON from file {}!", jsonFile, ex));
+                } catch (FileNotFoundException ex) {
+                    AmbientEvents.logError("Could not read JSON from file {}!", jsonFile, ex);
+                }
             }
         }
     }
@@ -76,8 +81,10 @@ public class EventManager {
         if(ev.phase==TickEvent.Phase.START) {
             if(TICK_TIMER.getAndAdd(1)>5) {
                 if(AmbientEvents.getSide(true).isServer()) {
-                    for(GenericEvent event : EVENTS)
-                        event.process(ev.player);
+                    synchronized(EVENTS) {
+                        for(GenericEvent event : EVENTS)
+                            event.process(ev.player);
+                    }
                 } else ClientEventManager.processClientEvents(ev.player);
                 TICK_TIMER.setValue(0);
             }

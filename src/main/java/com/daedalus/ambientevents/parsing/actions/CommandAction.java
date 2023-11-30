@@ -25,6 +25,6 @@ public class CommandAction extends ServerAction {
     public void execute(EntityPlayer player) {
         List<String> strVals = getStrs(player);
         if(strVals.get(1).matches("empty")) AmbientEvents.executeCommand("/"+strVals.get(0));
-        else AmbientEvents.executeCommand("/exectue "+strVals.get(1)+" "+strVals.get(0));
+        else AmbientEvents.executeCommand("/execute "+strVals.get(1)+" "+strVals.get(0));
     }
 }

@@ -60,22 +60,11 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
 
-    //annotation processors
-    annotationProcessor("org.ow2.asm:asm-debug-all:${project.asm_debug_annotation}")
-    annotationProcessor("com.google.guava:guava:${project.guava_annotation}")
-    annotationProcessor("com.google.code.gson:gson:${project.gson_annotation}")
-    annotationProcessor("zone.rong:mixinbooter:${project.mixinbooter_version}") {
-        transitive = false
-    }
-
-    //implemented stuff
-    implementation("zone.rong:mixinbooter:${project.mixinbooter_version}") {
-        transitive = false
-    }
     implementation(fg.deobf("curse.maven:the-impossible-library-661115:${project.til_version}"))
 
     //runtime stuff and libraries
     runtimeOnly(fg.deobf("curse.maven:brandons-core-231382:${project.bc_version}"))
+    runtimeOnly(fg.deobf("curse.maven:bookshelf-228525:${project.bookshelf_version}"))
     runtimeOnly(fg.deobf("curse.maven:caliper-266824:${project.caliper_version}"))
     runtimeOnly(fg.deobf("curse.maven:codechicken-lib-242818:${project.ccl_version}"))
     runtimeOnly(fg.deobf("curse.maven:had-enough-items-557549:${project.hei_version}"))
@@ -100,7 +89,7 @@ jar {
     manifest {
         /*
         attributes([
-                'FMLCorePlugin': 'mods.thecomputerizer.dimhoppertweaks.core.EarlyMixinPlugin',
+                'FMLCorePlugin': 'com.daedalus.ambientevents.core.EarlyMixinPlugin',
                 'FMLCorePluginContainsFMLMod': true,
                 'ForceLoadAsMod': true,
                 'FMLAT': 'soundevents_at.cfg'

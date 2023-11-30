@@ -1,1 +1,4 @@
-item.configurator.name=Configurator
+commands.ambientevents.reload.success=Successfully reloaded config file for More Ambient Events!
+commands.ambientevents.usage=Usage: `/ambientevents reload`
+
+item.ambientevents.configurator.name=Configurator

@@ -1,15 +1,11 @@
 package com.daedalus.ambientevents.parsing.conditions;
 
-import com.daedalus.ambientevents.parsing.strings.IString;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonIOException;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
 public class WeatherCondition extends Condition {
-
-	protected IString condition;
 
 	public WeatherCondition(JsonObject json) throws JsonIOException {
 		super();

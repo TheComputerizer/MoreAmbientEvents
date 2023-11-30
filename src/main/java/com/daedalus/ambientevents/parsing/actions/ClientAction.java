@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.relauncher.Side;
 
-public abstract class ClientAction extends CommandAction {
+public abstract class ClientAction extends Action {
 
     protected ClientAction(JsonObject json) throws JsonIOException {
         super(json);
