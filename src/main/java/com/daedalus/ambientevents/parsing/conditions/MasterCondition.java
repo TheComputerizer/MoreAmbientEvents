@@ -27,16 +27,18 @@ public class MasterCondition {
 					case "alwaystrue": return new AlwaysTrueCondition();
 					case "canseesky": return new CanSeeSkyCondition();
 					case "chance": return new ChanceCondition(json);
+					case "death": return new DeathCondition();
 					case "dimension": return new DimensionCondition(json);
 					case "falling": return new FallingCondition(json);
 					case "lookingat": return new LookingAtCondition(json);
 					case "moon": return new MoonCondition(json);
 					case "once": return new OnceCondition();
-					case "onfire": return new OnFireCondition(json);
+					case "onfire": return new OnFireCondition();
 					case "playerpos": return new PlayerPosCondition(json);
 					case "season": return new SeasonCondition(json);
 					case "submerged": return new SubmergedCondition(json);
 					case "timeofday": return new TimeOfDayCondition(json);
+					case "timer": return new TimerCondition(json);
 					case "timesincesleep": return new TimeSinceSleepCondition(json);
 					case "weather": return new WeatherCondition(json);
 					case "worldtime": return new WorldTimeCondition(json);
@@ -57,6 +59,7 @@ public class MasterCondition {
 				case "alwaystrue": return new AlwaysTrueCondition(buf);
 				case "canseesky": return new CanSeeSkyCondition(buf);
 				case "chance": return new ChanceCondition(buf);
+				case "death": return new DeathCondition(buf);
 				case "dimension": return new DimensionCondition(buf);
 				case "falling": return new FallingCondition(buf);
 				case "lookingat": return new LookingAtCondition(buf);
@@ -67,6 +70,7 @@ public class MasterCondition {
 				case "season": return new SeasonCondition(buf);
 				case "submerged": return new SubmergedCondition(buf);
 				case "timeofday": return new TimeOfDayCondition(buf);
+				case "timer": return new TimerCondition(buf);
 				case "timesincesleep": return new TimeSinceSleepCondition(buf);
 				case "weather": return new WeatherCondition(buf);
 				case "worldtime": return new WorldTimeCondition(buf);
@@ -80,6 +84,7 @@ public class MasterCondition {
 
 	private final List<Condition> conditions;
 	private OnceCondition once = null;
+	private TimerCondition timer = null;
 
 	public MasterCondition(@Nullable JsonArray json) throws JsonIOException {
 		this.conditions = new ArrayList<>();
@@ -88,6 +93,7 @@ public class MasterCondition {
 				Condition condition = newCondition(ParsingUtils.getAsObject(element));
 				if(Objects.nonNull(condition)) {
 					if(condition instanceof OnceCondition) this.once = (OnceCondition)condition;
+					else if(condition instanceof TimerCondition) this.timer = (TimerCondition)condition;
 					else this.conditions.add(condition);
 				}
 			}
@@ -100,7 +106,11 @@ public class MasterCondition {
 
 	public boolean isMet(EntityPlayer player) {
 		for(Condition condition : this.conditions)
-			if(!condition.isMet(player)) return false;
+			if(!condition.isMet(player)) {
+				if(Objects.nonNull(this.timer)) this.timer.reset();
+				return false;
+			}
+		if(Objects.nonNull(this.timer) && !this.timer.isMet(player)) return false;
 		return Objects.isNull(this.once) || this.once.isMet(player);
 	}
 

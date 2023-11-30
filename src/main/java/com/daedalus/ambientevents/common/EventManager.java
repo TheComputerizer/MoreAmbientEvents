@@ -79,7 +79,7 @@ public class EventManager {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent ev) {
         if(ev.phase==TickEvent.Phase.START) {
-            if(TICK_TIMER.getAndAdd(1)>5) {
+            if(TICK_TIMER.getAndAdd(1)>AmbientEventsRef.EVENT_TICK_RATE) {
                 if(AmbientEvents.getSide(true).isServer()) {
                     synchronized(EVENTS) {
                         for(GenericEvent event : EVENTS)

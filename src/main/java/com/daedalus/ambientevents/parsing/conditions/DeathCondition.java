@@ -4,18 +4,18 @@ import com.google.gson.JsonIOException;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
-public class OnFireCondition extends Condition {
+public class DeathCondition extends Condition {
 
-    public OnFireCondition() throws JsonIOException {
+    public DeathCondition() throws JsonIOException {
         super();
     }
 
-    public OnFireCondition(ByteBuf buf) {
+    public DeathCondition(ByteBuf buf) {
         super(buf);
     }
 
     @Override
     public boolean isMet(EntityPlayer player) {
-        return player.isBurning();
+        return player.isDead;
     }
 }

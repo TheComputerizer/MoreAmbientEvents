@@ -60,6 +60,9 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
 
+    //implemented and supported mods
+    implementation(fg.deobf("curse.maven:nyx-349214:${project.nyx_version}"))
+    implementation(fg.deobf("curse.maven:serene-seasons-291874:${project.seasons_version}"))
     implementation(fg.deobf("curse.maven:the-impossible-library-661115:${project.til_version}"))
 
     //runtime stuff and libraries

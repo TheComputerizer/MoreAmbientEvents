@@ -5,18 +5,18 @@ import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 
-public class FallingCondition extends Condition {
+public class FallingCondition extends ComparisonCondition {
 
     public FallingCondition(JsonObject json) throws JsonIOException {
-        super();
+        super(json);
     }
 
     public FallingCondition(ByteBuf buf) {
-
+        super(buf);
     }
 
     @Override
-    boolean isMet(EntityPlayer player) {
-        return false;
+    public boolean isMet(EntityPlayer player) {
+        return !player.onGround;
     }
 }

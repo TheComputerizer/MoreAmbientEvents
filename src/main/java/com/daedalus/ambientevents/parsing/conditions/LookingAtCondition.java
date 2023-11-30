@@ -9,14 +9,15 @@ public class LookingAtCondition extends Condition {
 
     public LookingAtCondition(JsonObject json) throws JsonIOException {
         super();
+        addString(json,"object");
     }
 
     public LookingAtCondition(ByteBuf buf) {
-
+        super(buf);
     }
 
     @Override
-    boolean isMet(EntityPlayer player) {
+    public boolean isMet(EntityPlayer player) {
         return false;
     }
 }

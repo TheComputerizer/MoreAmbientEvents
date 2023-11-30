@@ -13,6 +13,7 @@ public class AmbientEventsRef {
 	public static final String DEPENDENCIES = "required-after:forge@[14.23.5.2860,);"+
 			"required-after:theimpossiblelibrary;";
 	public static final Logger LOGGER = LogManager.getLogger(NAME);
+	public static final int EVENT_TICK_RATE = 5;
 	public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setLenient().setPrettyPrinting().create();
 	public static final JsonParser PARSER = new JsonParser();
 }
