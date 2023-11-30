@@ -2,6 +2,7 @@ package com.daedalus.ambientevents.parsing.conditions;
 
 import com.daedalus.ambientevents.AmbientEvents;
 import com.daedalus.ambientevents.AmbientEventsRef;
+import com.daedalus.ambientevents.parsing.numbers.RawNumber;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
@@ -16,7 +17,7 @@ public class TimerCondition extends ComparisonCondition {
 
     protected TimerCondition(JsonObject json) throws JsonIOException {
         super(json);
-        addNumber(json,"max");
+        addNumber(json,"max",new RawNumber(Integer.MAX_VALUE));
         this.tickTimer = new MutableInt();
     }
 

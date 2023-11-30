@@ -16,6 +16,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -80,24 +81,37 @@ public class AmbientEvents {
 	/**
 	 * Executes a server command
 	 */
-	public static void executeCommand(String rawCommand) {
+	public static void executeCommand(String rawCommand, boolean removeFeedback) {
 		MinecraftServer server = getServer();
-		executeCommand(server,server,rawCommand);
+		executeCommand(server,server,rawCommand,removeFeedback);
 	}
 
 	/**
 	 * Executes a command as a specific sender.
 	 */
-	public static void executeCommand(ICommandSender sender, String rawCommand) {
-		executeCommand(getServer(),sender,rawCommand);
+	public static void executeCommand(ICommandSender sender, String rawCommand, boolean removeFeedback) {
+		executeCommand(getServer(),sender,rawCommand,removeFeedback);
 	}
 
 	/**
 	 * Executes a command as a specific sender. The server is nullable since getServer() returns null on the client.
 	 */
-	public static void executeCommand(@Nullable MinecraftServer server, ICommandSender sender, String rawCommand) {
-		if(Objects.isNull(server)) logError("Cannot execute command on null server");
-		else server.commandManager.executeCommand(sender,rawCommand);
+	public static void executeCommand(@Nullable MinecraftServer server, ICommandSender sender, String rawCommand,
+									  boolean removeFeedback) {
+		if(Objects.isNull(server) || Objects.isNull(sender))
+			logError("Cannot execute command on null server or sender");
+		else {
+			if(removeFeedback) feedback(sender.getEntityWorld(),false);
+			server.commandManager.executeCommand(sender,rawCommand);
+			if(removeFeedback) feedback(sender.getEntityWorld(),true);
+		}
+	}
+
+	/**
+	 * Enables or disable command feedback
+	 */
+	public static void feedback(World world, boolean enable) {
+		world.getGameRules().setOrCreateGameRule("sendCommandFeedback",String.valueOf(enable));
 	}
 
 	public static File getConfigFile(String path, boolean shouldOverride) {
