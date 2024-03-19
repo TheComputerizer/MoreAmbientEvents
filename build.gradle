@@ -1,5 +1,8 @@
 plugins {
-    id 'net.minecraftforge.gradle' version '6.0.+'
+    id 'idea'
+    id 'java'
+    id 'java-library'
+    id 'net.minecraftforge.gradle' version '6.+'
     id 'wtf.gofancy.fancygradle' version '1.1.+'
 }
 
@@ -13,41 +16,28 @@ fancyGradle {
     }
 }
 
-version = "${project.minecraft_version}-${project.mod_version}"
-group = project.maven_group
-archivesBaseName = project.base_name
+group = mod_package
+version = "${mod_version}+${minecraft_version}"
 
 java.toolchain.getLanguageVersion().set(JavaLanguageVersion.of(8))
 
 minecraft {
     mappings channel: 'stable', version: mappings_version
-    //accessTransformer = file('src/main/resources/META-INF/soundevents_at.cfg')
     runs {
-        def args = [
-                '-Dmixin.debug.export=true',
-                '-Dmixin.hotSwap=true',
-                '-Dmixin.checks.interfaces=true'
-        ]
         client {
             workingDirectory file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            jvmArgs args
         }
 
         server {
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            jvmArgs args
         }
     }
 }
 
 repositories {
-    maven {
-        name = 'CleanRoom'
-        url = uri('https://maven.cleanroommc.com')
-    }
     maven {
         name = 'CurseForge'
         url = uri('https://www.cursemaven.com')
@@ -55,33 +45,50 @@ repositories {
             includeGroup 'curse.maven'
         }
     }
+    maven {
+        name = 'JitPack'
+        url = uri('https://jitpack.io')
+    }
+}
+
+/**
+ * LegacyDev is broken for some reason so replace it with the GitHub project
+ */
+configurations.minecraft {
+    resolutionStrategy.dependencySubstitution {
+        substitute module("net.minecraftforge:legacydev:0.2.4.+") using module("com.github.minecraftforge:LegacyDev:${legacydev_hash}")
+    }
 }
 
 dependencies {
-    minecraft("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
+    minecraft("net.minecraftforge:forge:${minecraft_version}-${forge_version}") {
+        exclude module: 'legacydev'
+    }
 
     //implemented and supported mods
-    implementation(fg.deobf("curse.maven:nyx-349214:${project.nyx_version}"))
-    implementation(fg.deobf("curse.maven:serene-seasons-291874:${project.seasons_version}"))
-    implementation(fg.deobf("curse.maven:the-impossible-library-661115:${project.til_version}"))
+    implementation(fg.deobf("curse.maven:nyx-349214:${nyx_version}"))
+    implementation(fg.deobf("curse.maven:serene-seasons-291874:${seasons_version}"))
+    implementation(fg.deobf("curse.maven:the-impossible-library-661115:${til_version}"))
 
     //runtime stuff and libraries
-    runtimeOnly(fg.deobf("curse.maven:brandons-core-231382:${project.bc_version}"))
-    runtimeOnly(fg.deobf("curse.maven:bookshelf-228525:${project.bookshelf_version}"))
-    runtimeOnly(fg.deobf("curse.maven:caliper-266824:${project.caliper_version}"))
-    runtimeOnly(fg.deobf("curse.maven:codechicken-lib-242818:${project.ccl_version}"))
-    runtimeOnly(fg.deobf("curse.maven:had-enough-items-557549:${project.hei_version}"))
-    runtimeOnly(fg.deobf("curse.maven:redstone-flux-270789:${project.rf_version}"))
-    runtimeOnly(fg.deobf("curse.maven:the-one-probe-245211:${project.top_version}"))
+    runtimeOnly(fg.deobf("curse.maven:brandons-core-231382:${bc_version}"))
+    runtimeOnly(fg.deobf("curse.maven:bookshelf-228525:${bookshelf_version}"))
+    runtimeOnly(fg.deobf("curse.maven:caliper-266824:${caliper_version}"))
+    runtimeOnly(fg.deobf("curse.maven:codechicken-lib-242818:${ccl_version}"))
+    runtimeOnly(fg.deobf("curse.maven:had-enough-items-557549:${hei_version}"))
+    runtimeOnly(fg.deobf("curse.maven:redstone-flux-270789:${rf_version}"))
+    runtimeOnly(fg.deobf("curse.maven:the-one-probe-245211:${top_version}"))
 }
 
 processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    inputs.property "version", project.version
-    inputs.property "mcversion", minecraft_version
+    inputs.properties('author1': mod_author1, 'author2': mod_author2, 'credits': mod_credits,
+            'description': mod_description, 'logo': mod_logo, 'mcversion': minecraft_version, 'modid': mod_id,
+            'name': mod_name, 'version': version)
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-        expand 'version': project.version, 'mcversion': minecraft_version
+        expand 'author1': mod_author1, 'author2': mod_author2, 'credits': mod_credits, 'description': mod_description,
+                'logo': mod_logo, 'mcversion': minecraft_version, 'modid': mod_id, 'name': mod_name, 'version': version
     }
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
@@ -89,14 +96,5 @@ processResources {
 }
 
 jar {
-    manifest {
-        /*
-        attributes([
-                'FMLCorePlugin': 'com.daedalus.ambientevents.core.EarlyMixinPlugin',
-                'FMLCorePluginContainsFMLMod': true,
-                'ForceLoadAsMod': true,
-                'FMLAT': 'soundevents_at.cfg'
-        ])
-         */
-    }
+    archiveBaseName = mod_id
 }

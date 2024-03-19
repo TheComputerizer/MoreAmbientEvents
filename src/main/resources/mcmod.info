@@ -1,14 +1,14 @@
 [{
-  "modid": "ambientevents",
-  "name": "More Ambient Events",
-  "description": "A mod to give pack makers access to even more events triggered by player and time conditionals.",
+  "modid": "${modid}",
+  "name": "${name}",
+  "description": "${description}",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Daedalus1400", "The_Computerizer"],
-  "credits": "Authored by Daedalus1400, based on an idea by Wyld. Updated and maintained by The_Computerizer",
-  "logoFile": "logo.png",
+  "authorList": ["${author1}", "${author2}"],
+  "credits": "${credits}",
+  "logoFile": "${logo}",
   "screenshots": [],
   "dependencies": []
 }]
